@@ -301,7 +301,16 @@ class MarketIntelligenceService:
                 demand.notice,
             )
             self.repo.save_cache(key, demand.model_dump(mode="json"), demand.collected_at)
-        if demand.status != "completed" and prior and prior.demand.status == "completed":
+        if (
+            demand.status != "completed"
+            and prior
+            and prior.demand.status == "completed"
+            and prior.demand.provider == demand.provider == name
+            and prior.demand.location == demand.location == location
+            and prior.demand.query.casefold().split()
+            == demand.query.casefold().split()
+            == product.name.casefold().split()
+        ):
             run.stages[-1].retained = True
             demand = prior.demand
         trend = calculate_trend(demand.observations)

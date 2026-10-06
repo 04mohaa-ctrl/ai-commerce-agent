@@ -1,3 +1,5 @@
+import pytest
+
 from src.database.database import ProductRepository
 from src.research.models import utc_now
 from src.research.research_service import EvidenceResearchService
@@ -325,3 +327,54 @@ def test_manual_economics_recalculation_removes_obsolete_missing_cost_risk(tmp_p
     assert report.economics_result.estimated_net_profit == 14.54
     assert not any("economics incomplete" in flag for flag in report.risk_flags)
     assert web.calls == 1 and pages.source_fetch_count == 3
+
+
+@pytest.mark.parametrize("changed", ["provider", "location", "query", "none"])
+def test_failed_demand_retains_only_comparable_provider_query_and_location(
+    tmp_path, product, changed
+):
+    from src.research.providers.demand_trend import DemandResult
+
+    _, ext, _, _, evidence, market = setup(tmp_path)
+
+    class Demand:
+        name = "fixture-demand"
+        location = "United States (2840)"
+        request_count = 0
+        status = "completed"
+
+        def collect(self, product):
+            self.request_count += 1
+            return DemandResult(
+                provider=self.name,
+                query=product.name,
+                location=self.location,
+                status=self.status,
+                notice="Measured demand data unavailable" if self.status == "failed" else "",
+            )
+
+    provider = Demand()
+    market.demand_provider = provider
+    market.research_product(product, evidence)
+    prior = ext.get_report(product.id)
+    if changed == "provider":
+        provider.name = "another-demand-provider"
+    elif changed == "location":
+        provider.location = "Sweden (2752)"
+    elif changed == "query":
+        prior.demand.query = "Different product query"
+        ext.save_report(prior)
+    provider.status = "failed"
+    market.research_product(product, evidence, force=True)
+    report = ext.get_report(product.id)
+    stage = next(s for s in report.telemetry.stages if s.stage == "demand")
+    assert stage.status == "FAILED"
+    assert stage.retained is (changed == "none")
+    if changed == "none":
+        assert report.demand == prior.demand
+    else:
+        assert report.demand.status == "failed"
+        assert report.demand.provider == provider.name
+        assert report.demand.location == provider.location
+        assert report.demand.query == product.name
+        assert report.score.dimensions["Numeric trend"] == 0
