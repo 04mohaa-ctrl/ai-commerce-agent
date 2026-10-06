@@ -5,6 +5,7 @@ from pydantic import ValidationError
 
 from src.config import Settings
 from src.database.database import ProductRepository
+from src.research.market_intelligence import MarketIntelligenceService
 from src.research.models import EvidenceFinding, ResearchReport, utc_now
 from src.research.providers.base import product_fingerprint
 from src.research.research_service import EvidenceResearchService
@@ -80,6 +81,11 @@ def render_research_view(product: Product, repo: ProductRepository, settings: Se
         "OpenAI web research may incur API charges. "
         "The Settings demo switch prevents external research. Navigation makes no requests."
     )
+    st.checkbox("Refresh all providers (ignore fresh caches)", key=f"force_refresh_{product.id}")
+    st.checkbox(
+        "Reuse fresh web research to avoid a new OpenAI request",
+        key=f"reuse_web_cache_{product.id}",
+    )
     if not report:
         return
     st.caption(
@@ -145,7 +151,13 @@ def run_product_research(
             progress.progress(min(90, stage[0] * 25))
             status.write(message)
 
-        result = service.research_product(product, force=True, progress=update)
+        result = MarketIntelligenceService(repo).research_product(
+            product,
+            service,
+            force=st.session_state.get(f"force_refresh_{product.id}", False),
+            refresh_web=not st.session_state.get(f"reuse_web_cache_{product.id}", False),
+            progress=update,
+        )
         progress.progress(100)
         status.update(
             label="Research failed"
@@ -160,7 +172,7 @@ def run_product_research(
 
 
 def render_sources_view(product: Product, repo: ProductRepository) -> None:
-    st.markdown("**SOURCES · VERIFIED / OBSERVED citation provenance**")
+    st.markdown("**SOURCES · OBSERVED citation provenance**")
     st.caption(
         "URLs and access times come from web-search tool citations. Source-linked summaries "
         "are AI interpretations; citation presence does not independently verify a market claim."
@@ -175,6 +187,11 @@ def render_sources_view(product: Product, repo: ProductRepository) -> None:
         st.write(
             f"AI JUDGEMENT · Unverified search-report context: {source.what_claim_it_supports}"
         )
+    from src.ui.market_intelligence import current_market_report, render_page_support
+
+    market = current_market_report(product, repo)
+    if market:
+        render_page_support(market, prefix="sources")
 
 
 def render_economics_view(product: Product, repo: ProductRepository) -> None:

@@ -1,5 +1,17 @@
 # AI Commerce Agent
 
+## V3 market intelligence
+
+V3 extends the same research action with bounded page support, optional native
+DataForSEO relative popularity, compatible listing prices, separate landed/return
+economics and deterministic explainable scoring. V1/V2 saved scores and economics
+remain readable. No providers run on navigation or financial saves.
+
+See [V3 architecture and usage](docs/v3-market-intelligence.md) and
+[V3 verification](docs/verification-v3.md). DataForSEO is optional and disabled
+without both process-environment credentials; unavailable measured data never
+blocks the app. Page support confirms publisher attribution, not objective truth.
+
 **Current development: V2 — evidence-backed product research.** The stable V1
 checkpoint is tagged `v1.0.0`; V2 extends it on `feat/evidence-backed-research`.
 All original demo, manual-product and saved-product flows remain supported.

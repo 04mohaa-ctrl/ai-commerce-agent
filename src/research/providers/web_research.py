@@ -55,11 +55,13 @@ class WebResearchProvider:
         model: str = "gpt-4.1-mini",
         client: OpenAI | None = None,
         price_loader: Callable = fetch_listing_prices,
+        telemetry: Callable | None = None,
     ):
         self.api_key = api_key
         self.model = model
         self.client = client
         self.price_loader = price_loader
+        self.telemetry = telemetry
 
     def research(
         self, product: Product, progress: ProgressCallback | None = None
@@ -69,7 +71,7 @@ class WebResearchProvider:
                 return self._research(self.client, product, progress)
             with OpenAI(api_key=self.api_key, timeout=45, max_retries=0) as client:
                 return self._research(client, product, progress)
-        except (APIError, ValidationError, ValueError, TypeError):
+        except (APIError, ValidationError, ValueError, TypeError, AttributeError):
             raise ResearchProviderError(
                 "External research failed. Check API/model access and connection; "
                 "no new evidence was accepted."
@@ -83,6 +85,20 @@ class WebResearchProvider:
                 progress(message)
 
         update("Searching current web sources…")
+        if self.telemetry:
+            self.telemetry("openai_request")
+        try:
+            response = self._retrieve(client, product)
+            calls = [item for item in response.output if item.type == "web_search_call"]
+        except (APIError, ValueError, TypeError, AttributeError):
+            if self.telemetry:
+                self.telemetry("web_search_unknown")
+            raise
+        if self.telemetry:
+            self.telemetry("web_search", len(calls))
+        return self._classify(client, product, response, calls, update)
+
+    def _retrieve(self, client: OpenAI, product: Product):
         response = client.responses.create(
             model=self.model,
             instructions=RETRIEVAL_INSTRUCTIONS,
@@ -102,9 +118,11 @@ class WebResearchProvider:
             max_output_tokens=2500,
             store=False,
         )
+        return response
+
+    def _classify(self, client, product, response, calls, update):
         if response.status != "completed":
             raise ValueError("Incomplete web response")
-        calls = [item for item in response.output if item.type == "web_search_call"]
         if not calls or any(call.status != "completed" for call in calls):
             raise ValueError("Web research did not complete")
         sources, contexts = self._citations(response)
@@ -117,6 +135,8 @@ class WebResearchProvider:
             )
         update("Classifying source-linked evidence…")
         try:
+            if self.telemetry:
+                self.telemetry("openai_request")
             parsed = client.responses.parse(
                 model=self.model,
                 instructions=EXTRACTION_INSTRUCTIONS,

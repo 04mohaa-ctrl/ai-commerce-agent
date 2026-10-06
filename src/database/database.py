@@ -24,7 +24,7 @@ class ProductRepository:
             self.path.parent.mkdir(parents=True, exist_ok=True)
             with self._connection() as conn:
                 version = conn.execute("PRAGMA user_version").fetchone()[0]
-                if version > 2:
+                if version > 3:
                     raise DataStoreError(
                         "This database needs a newer app version. No migration performed."
                     )
