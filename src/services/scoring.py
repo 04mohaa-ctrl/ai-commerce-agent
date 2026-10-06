@@ -58,8 +58,12 @@ def build_result(
     model: str = "deterministic-demo-v1",
 ) -> ResearchResult:
     """Calculate derived values from inputs and validated analyst judgement."""
-    margin = gross_margin(product.cost, product.selling_price)
-    score = score_breakdown(assessment, margin)
+    margin = (
+        gross_margin(product.cost, product.selling_price)
+        if product.cost is not None and product.selling_price is not None
+        else None
+    )
+    score = score_breakdown(assessment, margin if margin is not None else 0)
     return ResearchResult(
         product=product,
         assessment=assessment,

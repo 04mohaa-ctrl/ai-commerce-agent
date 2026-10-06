@@ -35,8 +35,8 @@ class ScoreHints(DomainModel):
 class Product(DomainModel):
     name: str = Field(min_length=1, max_length=120)
     category: str = Field(min_length=1, max_length=80)
-    cost: Money
-    selling_price: PositiveMoney
+    cost: Money | None = None
+    selling_price: PositiveMoney | None = None
     description: str = Field(default="", max_length=2000)
     tags: list[str] = Field(default_factory=list)
     source: Literal["demo", "manual", "external"] = "manual"
@@ -68,8 +68,8 @@ class Assessment(DomainModel):
     marketing_angles: list[str] = Field(default_factory=list)
     problems: list[str] = Field(default_factory=list)
     competition_reasoning: str = ""
-    suggested_price_min: PositiveMoney = 1
-    suggested_price_max: PositiveMoney = 1
+    suggested_price_min: PositiveMoney | None = 1
+    suggested_price_max: PositiveMoney | None = 1
     explanation: str = ""
     risks: list[str] = Field(default_factory=list)
     next_steps: list[str] = Field(default_factory=list)
@@ -77,7 +77,12 @@ class Assessment(DomainModel):
 
     @model_validator(mode="after")
     def validate_price_range(self) -> "Assessment":
-        if self.suggested_price_min > self.suggested_price_max:
+        if (self.suggested_price_min is None) != (self.suggested_price_max is None):
+            raise ValueError("Suggested price bounds must both be known or both unknown.")
+        if (
+            self.suggested_price_min is not None
+            and self.suggested_price_min > self.suggested_price_max
+        ):
             raise ValueError("Suggested minimum price cannot exceed maximum price.")
         return self
 
@@ -86,15 +91,19 @@ class ScoreBreakdown(DomainModel):
     total: Annotated[float, Field(ge=0, le=100)]
     profit_potential: Score
     components: dict[str, float]
+    confidence_factor: float = 1.0
+    unadjusted_total: float | None = None
 
 
 class ResearchResult(DomainModel):
     product: Product
     assessment: Assessment
-    gross_margin: float
+    gross_margin: float | None
     score: ScoreBreakdown
     recommendation: Literal["Strong candidate", "Worth investigating", "Weak candidate"]
     mode: Literal["demo", "openai"]
     notice: str = ""
     model: str = "deterministic-demo-v1"
     analyzed_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    score_basis: Literal["estimate", "evidence"] = "estimate"
+    confidence_level: Literal["low", "medium", "high"] = "low"

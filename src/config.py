@@ -14,6 +14,7 @@ class Settings:
     api_key: str = field(default="", repr=False)
     model: str = "gpt-4o-mini"
     database_path: Path = PROJECT_ROOT / "data" / "commerce.db"
+    research_model: str = "gpt-4.1-mini"
 
 
 def load_settings(env_path: Path | None = None) -> Settings:
@@ -29,4 +30,5 @@ def load_settings(env_path: Path | None = None) -> Settings:
         api_key=value("OPENAI_API_KEY", ""),
         model=value("OPENAI_MODEL", "gpt-4o-mini") or "gpt-4o-mini",
         database_path=path.resolve(),
+        research_model=value("OPENAI_RESEARCH_MODEL", "gpt-4.1-mini") or "gpt-4.1-mini",
     )

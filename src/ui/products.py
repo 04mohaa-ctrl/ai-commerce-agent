@@ -2,18 +2,35 @@
 
 import streamlit as st
 
+from src.config import load_settings
 from src.database.database import ProductRepository
+from src.research.scoring import hydrate_results
 from src.schemas.product import ResearchResult
 from src.services.product_service import SORT_KEYS, filter_results
 from src.services.scoring import WEIGHTS
+from src.ui.research_details import render_economics_view, render_research_view, render_sources_view
+
+
+def money_text(value: float | None) -> str:
+    return f"USD {value:.2f}" if value is not None else "Unknown"
+
+
+def margin_text(value: float | None) -> str:
+    return f"{value:.1f}%" if value is not None else "Unknown"
 
 
 def render_products(
     results: list[ResearchResult], repo: ProductRepository, prefix: str, title: str
 ) -> None:
+    results = hydrate_results(results, repo)
     st.subheader(title)
     if not results:
-        st.info("No products match your search. Try a broader category or add a product manually.")
+        st.info(
+            "No products match your search. Try a broader category or use Research this product "
+            "above for a new specific name."
+            if prefix == "research"
+            else "No products match your search. Try a broader category or add a product manually."
+        )
         return
     modes = {r.mode for r in results}
     if "demo" in modes:
@@ -77,7 +94,7 @@ def render_products(
             "Category": r.product.category,
             "Estimated product cost": r.product.cost,
             "Estimated selling price": r.product.selling_price,
-            "Gross margin %": round(r.gross_margin, 1),
+            "Gross margin %": round(r.gross_margin, 1) if r.gross_margin is not None else None,
             "Demand": r.assessment.demand,
             "Competition": r.assessment.competition,
             "Trend": r.assessment.trend,
@@ -88,6 +105,8 @@ def render_products(
             "Short AI explanation": r.assessment.explanation,
             "Risks": " | ".join(r.assessment.risks),
             "Analysis mode": "Demo" if r.mode == "demo" else "OpenAI",
+            "Score basis": r.score_basis,
+            "Evidence confidence": r.confidence_level,
         }
         for r in rows
     ]
@@ -118,8 +137,8 @@ def render_products(
                 st.metric("AI Score", f"{r.score.total:.1f} / 100")
                 st.write(r.recommendation)
                 st.caption(
-                    f"Margin {r.gross_margin:.1f}% · Cost USD {r.product.cost:.2f} · "
-                    f"Price USD {r.product.selling_price:.2f}"
+                    f"Margin {margin_text(r.gross_margin)} · Cost {money_text(r.product.cost)} · "
+                    f"Price {money_text(r.product.selling_price)}"
                 )
                 if st.button("View details", key=f"open_{prefix}_{r.product.id}", width="stretch"):
                     st.session_state[detail_key] = r.product.id
@@ -157,8 +176,11 @@ def render_details(result: ResearchResult, repo: ProductRepository, prefix: str)
         repo.remove_saved(product.id)
         st.session_state["flash"] = "Saved product removed."
         st.rerun()
-    overview_tab, evidence_tab, score_tab = st.tabs(
-        ["Analysis", "Data & assumptions", "Score calculation"]
+    overview_tab, evidence_tab, score_tab, research_tab, sources_tab, economics_tab = st.tabs(
+        ["Analysis", "Data & assumptions", "Score calculation", "Research", "Sources", "Economics"],
+        default="Research"
+        if st.session_state.get("research_focus_product") == product.id
+        else "Analysis",
     )
     with overview_tab:
         st.markdown(f"**{result.recommendation} · {result.score.total:.1f}/100**")
@@ -178,9 +200,17 @@ def render_details(result: ResearchResult, repo: ProductRepository, prefix: str)
             st.write(analysis.competition_reasoning)
         with right:
             st.markdown("**Suggested price range · hypothesis**")
-            st.write(f"USD {analysis.suggested_price_min:.2f}–{analysis.suggested_price_max:.2f}")
+            if (
+                analysis.suggested_price_min is not None
+                and analysis.suggested_price_max is not None
+            ):
+                st.write(
+                    f"USD {analysis.suggested_price_min:.2f}–{analysis.suggested_price_max:.2f}"
+                )
+            else:
+                st.write("Unknown; no price estimate provided.")
             st.markdown("**Estimated margin at input selling price**")
-            st.write(f"{result.gross_margin:.1f}% at USD {product.selling_price:.2f}")
+            st.write(f"{margin_text(result.gross_margin)} at {money_text(product.selling_price)}")
             st.markdown("**Potential problems**")
             for problem in analysis.problems:
                 st.write(f"• {problem}")
@@ -199,7 +229,8 @@ def render_details(result: ResearchResult, repo: ProductRepository, prefix: str)
             st.write("None. No verified market evidence has been provided for this product.")
         st.markdown("**Estimated data**")
         st.write(
-            f"Product cost USD {product.cost:.2f}; selling price USD {product.selling_price:.2f}. "
+            f"Product cost {money_text(product.cost)}; "
+            f"selling price {money_text(product.selling_price)}. "
             "Local source estimates have not been validated against supplier or market quotes."
         )
         st.write({"Input score assumptions (0–10)": product.hints.model_dump()})
@@ -212,6 +243,11 @@ def render_details(result: ResearchResult, repo: ProductRepository, prefix: str)
         st.warning(analysis.uncertainty)
     with score_tab:
         st.markdown("**Transparent weighted score**")
+        if result.score_basis == "evidence":
+            st.info(
+                f"Evidence-backed score · confidence {result.confidence_level.upper()}. "
+                "The profit factor uses estimated NET margin, including shipping, fees and ads."
+            )
         st.code(
             "10 × (0.25 × demand + 0.25 × margin_score + 0.20 × trend\n"
             "    + 0.15 × (10 − competition) + 0.15 × marketing)"
@@ -236,16 +272,43 @@ def render_details(result: ResearchResult, repo: ProductRepository, prefix: str)
             hide_index=True,
             width="stretch",
         )
+        if result.score.unadjusted_total is not None:
+            st.write(
+                f"Raw weighted score {result.score.unadjusted_total:.4f} "
+                f"× confidence factor {result.score.confidence_factor:.2f}"
+            )
+            st.caption(
+                "Weak/moderate/strong map to 3/6/9; unsupported dimensions contribute zero "
+                "(unknown competition gives no advantage). Low confidence ×0.50, medium ×0.85. "
+                "Web summaries never qualify as high-confidence verification."
+            )
         st.write(f"**Total: {result.score.total:.1f}/100** (rounded to one decimal).")
         st.caption(
-            "Margin score = clamp(gross margin % / 10, 0, 10). Full-precision margin is used "
-            "for scoring. Profit potential is this margin score, not estimated net profit."
+            (
+                "Margin score = clamp(estimated net margin % / 10, 0, 10). "
+                "Unknown net margin gives zero points."
+                if result.score_basis == "evidence"
+                else "Margin score = clamp(gross margin % / 10, 0, 10). "
+                "Full-precision margin is used "
+                "for scoring. Profit potential is this margin score, not estimated net profit."
+            )
         )
-        st.code(
-            f"({product.selling_price:.2f} − {product.cost:.2f}) / "
-            f"{product.selling_price:.2f} × 100 = {result.gross_margin:.1f}%"
-        )
+        if product.selling_price is not None and product.cost is not None:
+            st.code(
+                f"({product.selling_price:.2f} − {product.cost:.2f}) / "
+                f"{product.selling_price:.2f} × 100 = {result.gross_margin:.1f}%"
+            )
+        else:
+            st.info(
+                "Product cost or selling price is unknown. No profit-margin points are assumed."
+            )
         st.caption(
             "Strong candidate ≥75; Worth investigating ≥55; Weak candidate <55. "
             "This is a prioritization tool, not a probability of success."
         )
+    with research_tab:
+        render_research_view(product, repo, load_settings())
+    with sources_tab:
+        render_sources_view(product, repo)
+    with economics_tab:
+        render_economics_view(product, repo)

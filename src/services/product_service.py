@@ -34,11 +34,13 @@ def filter_results(
         for r in results
         if (not categories or r.product.category in categories)
         and r.score.total >= min_score
-        and (min_margin is None or r.gross_margin >= min_margin)
+        and (min_margin is None or (r.gross_margin is not None and r.gross_margin >= min_margin))
         and (not recommendations or r.recommendation in recommendations)
     ]
     rows.sort(key=lambda r: (r.product.name.casefold(), r.product.id))
-    return sorted(rows, key=SORT_KEYS[sort_by], reverse=descending)
+    known = [r for r in rows if SORT_KEYS[sort_by](r) is not None]
+    unknown = [r for r in rows if SORT_KEYS[sort_by](r) is None]
+    return sorted(known, key=SORT_KEYS[sort_by], reverse=descending) + unknown
 
 
 class ResearchService:
@@ -67,3 +69,32 @@ class ResearchService:
             return []
         results = [self.agent.analyze(p) for p in self.candidates(query)[:limit]]
         return filter_results(results)
+
+    def exact_products(self, name: str) -> list[Product]:
+        """Match canonical names across seed, manual and saved products."""
+        normalized = Product.normalize_text(name).casefold()
+        if not normalized:
+            return []
+        products = {p.id: p for p in self.candidates()}
+        for saved in self.repository.list_saved():
+            products.setdefault(saved.product.id, saved.product)
+        return [p for p in products.values() if p.name.casefold() == normalized]
+
+    def is_category_query(self, query: str) -> bool:
+        normalized = Product.normalize_text(query).casefold()
+        return any(
+            normalized == Product.normalize_text(term).casefold()
+            for product in self.candidates()
+            for term in [product.category, *product.tags]
+        )
+
+    def get_or_create_custom(self, name: str) -> Product:
+        """Reuse an exact candidate or persist a custom candidate with unknown prices."""
+        matches = self.exact_products(name)
+        if len(matches) > 1:
+            raise ValueError("Several products share this name; select the intended candidate.")
+        if matches:
+            return matches[0]
+        product = Product(name=name, category="Other", source="manual")
+        self.repository.add_candidate(product)
+        return product

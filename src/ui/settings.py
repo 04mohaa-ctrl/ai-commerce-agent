@@ -24,6 +24,7 @@ def render_settings(settings: Settings) -> None:
     else:
         st.info("OpenAI API key not configured. The app remains fully usable in demo mode.")
     st.write(f"Model: **{settings.model}**")
+    st.write(f"Web research model: **{settings.research_model}**")
     st.caption(
         "Live mode sends each selected product to OpenAI when you submit research. "
         "It uses your API account and may incur charges. Navigation and saving do not call the API."
@@ -31,7 +32,7 @@ def render_settings(settings: Settings) -> None:
     st.markdown("**Enable OpenAI analysis**")
     st.code(
         "# Copy .env.example to .env and edit locally\n"
-        "OPENAI_API_KEY=your-key\nOPENAI_MODEL=gpt-4o-mini",
+        "OPENAI_API_KEY=your-key\nOPENAI_MODEL=gpt-4o-mini\nOPENAI_RESEARCH_MODEL=gpt-4.1-mini",
         language="bash",
     )
     st.caption(
