@@ -9,6 +9,7 @@ from pydantic import ValidationError
 from src.agents.product_research_agent import ProductResearchAgent
 from src.config import load_settings
 from src.database.database import DataStoreError, ProductRepository
+from src.research.scoring import hydrate_results
 from src.services.product_service import ResearchService
 from src.ui.products import render_products
 from src.ui.research import render_research
@@ -41,7 +42,7 @@ def main() -> None:
             label_visibility="collapsed",
         )
         st.divider()
-        st.caption("ONE ANALYST · V1")
+        st.caption("ONE ANALYST · V2")
         st.write("Demo mode" if st.session_state["use_demo"] else "OpenAI mode")
         st.caption("Local candidates. Clear assumptions.\nBuild a shortlist worth researching.")
     st.title("AI Commerce Agent")
@@ -53,7 +54,7 @@ def main() -> None:
             st.session_state["results"] = initial.research("")
             st.session_state["last_query"] = "Demo catalogue"
         saved = repo.list_saved()
-        results = st.session_state["results"]
+        results = hydrate_results(st.session_state["results"], repo)
         columns = st.columns(4)
         columns[0].metric("Products analyzed", str(len(results)))
         columns[1].metric("Saved products", str(len(saved)))

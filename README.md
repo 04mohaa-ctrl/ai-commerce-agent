@@ -1,5 +1,14 @@
 # AI Commerce Agent
 
+**Current development: V2 — evidence-backed product research.** The stable V1
+checkpoint is tagged `v1.0.0`; V2 extends it on `feat/evidence-backed-research`.
+All original demo, manual-product and saved-product flows remain supported.
+
+V2 adds **Research**, **Sources** and **Economics** tabs in Product Details,
+current web research through the OpenAI Responses API, source-linked findings,
+deterministic evidence confidence, net-margin scoring and durable financial
+assumptions. Read [V2 usage and limitations](docs/v2-research.md).
+
 En lokal researchplattform för att utvärdera och prioritera produktidéer inom
 e-commerce. V1 innehåller **en Product Research Analyst**. Appen startar direkt
 med 12 tydligt märkta demoprodukter och behöver ingen API-nyckel för att fungera.
@@ -56,6 +65,7 @@ cp .env.example .env
 ```dotenv
 OPENAI_API_KEY=
 OPENAI_MODEL=gpt-4o-mini
+OPENAI_RESEARCH_MODEL=gpt-4.1-mini
 DATABASE_PATH=data/commerce.db
 ```
 
@@ -210,3 +220,8 @@ poängen används för investeringsbeslut.
 
 Shopify, ordering, fulfillment, annonseringsautomation, support, betalningar,
 browser automation och fleragentsorkestrering ingår inte i V1.
+
+V2 still excludes those automation workflows. It searches current public web
+information only after an explicit **Research product** action with demo mode
+disabled. Research snapshots, unique sources, attempts and economics are stored
+in additive version-2 SQLite tables; existing V1 saved-product data is retained.

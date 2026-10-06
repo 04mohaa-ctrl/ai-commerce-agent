@@ -78,7 +78,12 @@ class ProductResearchAgent:
     @staticmethod
     def _demo(product: Product) -> Assessment:
         """Use supplied assumptions without claiming measured demand or trends."""
-        margin = gross_margin(product.cost, product.selling_price)
+        margin = (
+            gross_margin(product.cost, product.selling_price)
+            if product.cost is not None and product.selling_price is not None
+            else None
+        )
+        margin_text = f"{margin:.1f}%" if margin is not None else "unknown"
         target = {
             "Kitchen gadgets": "Home cooks seeking convenient preparation and easier cleanup",
             "Pet products": "Pet owners managing everyday grooming and home-cleaning routines",
@@ -105,7 +110,7 @@ class ProductResearchAgent:
         }
         if product.category in category_risks:
             risks.append(category_risks[product.category])
-        if margin <= 0:
+        if margin is not None and margin <= 0:
             risks.append("The current estimated selling price does not cover the product cost.")
         return Assessment(
             **product.hints.model_dump(),
@@ -128,11 +133,19 @@ class ProductResearchAgent:
                 f"Estimated competition assumption: {product.hints.competition:g}/10. "
                 "Compare current alternatives, review complaints and test a distinct positioning."
             ),
-            suggested_price_min=max(0.01, round(product.selling_price * 0.9, 2)),
-            suggested_price_max=min(1_000_000, round(product.selling_price * 1.1, 2)),
+            suggested_price_min=(
+                max(0.01, round(product.selling_price * 0.9, 2))
+                if product.selling_price is not None
+                else None
+            ),
+            suggested_price_max=(
+                min(1_000_000, round(product.selling_price * 1.1, 2))
+                if product.selling_price is not None
+                else None
+            ),
             explanation=(
                 f"Demo assessment using estimated inputs: demand {product.hints.demand:g}/10, "
-                f"trend {product.hints.trend:g}/10 and product-only gross margin {margin:.1f}%. "
+                f"trend {product.hints.trend:g}/10 and product-only gross margin {margin_text}. "
                 "Validate demand, supplier costs and acquisition costs before deciding to launch."
             ),
             risks=risks,
