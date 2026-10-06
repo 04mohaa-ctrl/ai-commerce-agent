@@ -42,7 +42,7 @@ def main() -> None:
             label_visibility="collapsed",
         )
         st.divider()
-        st.caption("ONE ANALYST · V2")
+        st.caption("ONE ANALYST · V3")
         st.write("Demo mode" if st.session_state["use_demo"] else "OpenAI mode")
         st.caption("Local candidates. Clear assumptions.\nBuild a shortlist worth researching.")
     st.title("AI Commerce Agent")

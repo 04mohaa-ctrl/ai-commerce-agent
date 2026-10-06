@@ -8,6 +8,8 @@ from src.research.scoring import hydrate_results
 from src.schemas.product import ResearchResult
 from src.services.product_service import SORT_KEYS, filter_results
 from src.services.scoring import WEIGHTS
+from src.ui.market_economics import render_market_economics
+from src.ui.market_intelligence import render_market_intelligence
 from src.ui.research_details import render_economics_view, render_research_view, render_sources_view
 
 
@@ -176,11 +178,21 @@ def render_details(result: ResearchResult, repo: ProductRepository, prefix: str)
         repo.remove_saved(product.id)
         st.session_state["flash"] = "Saved product removed."
         st.rerun()
-    overview_tab, evidence_tab, score_tab, research_tab, sources_tab, economics_tab = st.tabs(
-        ["Analysis", "Data & assumptions", "Score calculation", "Research", "Sources", "Economics"],
-        default="Research"
-        if st.session_state.get("research_focus_product") == product.id
-        else "Analysis",
+    overview_tab, evidence_tab, score_tab, research_tab, sources_tab, economics_tab, market_tab = (
+        st.tabs(
+            [
+                "Analysis",
+                "Data & assumptions",
+                "Score calculation",
+                "Research",
+                "Sources",
+                "Economics",
+                "Market Intelligence",
+            ],
+            default="Research"
+            if st.session_state.get("research_focus_product") == product.id
+            else "Analysis",
+        )
     )
     with overview_tab:
         st.markdown(f"**{result.recommendation} · {result.score.total:.1f}/100**")
@@ -312,3 +324,6 @@ def render_details(result: ResearchResult, repo: ProductRepository, prefix: str)
         render_sources_view(product, repo)
     with economics_tab:
         render_economics_view(product, repo)
+        render_market_economics(product, repo)
+    with market_tab:
+        render_market_intelligence(product, repo)
