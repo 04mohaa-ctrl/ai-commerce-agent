@@ -14,6 +14,7 @@ from src.services.product_service import ResearchService
 from src.ui.products import render_products
 from src.ui.research import render_research
 from src.ui.settings import render_settings
+from src.ui.supplier_intelligence import optional_provider_configured
 
 
 def main() -> None:
@@ -30,7 +31,9 @@ def main() -> None:
     )
     settings = load_settings()
     # This setting outlives the Settings-only toggle's widget lifecycle.
-    if "use_demo" not in st.session_state or not settings.api_key:
+    if "use_demo" not in st.session_state or not (
+        settings.api_key or optional_provider_configured()
+    ):
         st.session_state["use_demo"] = True
     with st.sidebar:
         st.title("◈ AI Commerce")
@@ -42,8 +45,14 @@ def main() -> None:
             label_visibility="collapsed",
         )
         st.divider()
-        st.caption("ONE ANALYST · V3")
-        st.write("Demo mode" if st.session_state["use_demo"] else "OpenAI mode")
+        st.caption("ONE ANALYST · V4")
+        st.write(
+            "Demo mode"
+            if st.session_state["use_demo"]
+            else "OpenAI mode"
+            if settings.api_key
+            else "Research mode"
+        )
         st.caption("Local candidates. Clear assumptions.\nBuild a shortlist worth researching.")
     st.title("AI Commerce Agent")
     st.caption("Find promising product ideas and understand the assumptions behind every score.")

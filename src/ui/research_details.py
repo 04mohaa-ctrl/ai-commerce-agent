@@ -136,6 +136,13 @@ def run_product_research(
     product: Product, repo: ProductRepository, settings: Settings
 ) -> ResearchReport:
     """One shared V2 action used by Details and the product-or-category entry point."""
+    from src.database.supply_repository import SupplyRepository
+    from src.supply.demand import DemandIntelligenceService, demand_provider_for
+    from src.supply.service import SupplierIntelligenceService
+    from src.ui.supplier_intelligence import research_destination
+
+    destination = research_destination(product, repo)
+    extension = SupplyRepository(repo)
     service = EvidenceResearchService(
         repo,
         api_key=settings.api_key,
@@ -151,12 +158,26 @@ def run_product_research(
             progress.progress(min(90, stage[0] * 25))
             status.write(message)
 
-        result = MarketIntelligenceService(repo).research_product(
+        result = MarketIntelligenceService(
+            repo, demand_provider=demand_provider_for(destination)
+        ).research_product(
             product,
             service,
             force=st.session_state.get(f"force_refresh_{product.id}", False),
             refresh_web=not st.session_state.get(f"reuse_web_cache_{product.id}", False),
             progress=update,
+        )
+        extension.save_settings(product.id, destination)
+        update("Collecting optional supplier observations…")
+        SupplierIntelligenceService(extension).research(
+            product,
+            destination,
+            force=st.session_state.get(f"force_refresh_{product.id}", False),
+            demo=st.session_state["use_demo"],
+        )
+        # Import comparable V3 measurement instead of a second paid request.
+        DemandIntelligenceService(extension).refresh(
+            product, destination, demo=st.session_state["use_demo"]
         )
         progress.progress(100)
         status.update(

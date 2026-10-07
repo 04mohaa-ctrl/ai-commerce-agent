@@ -24,7 +24,34 @@ class ProductRepository:
             self.path.parent.mkdir(parents=True, exist_ok=True)
             with self._connection() as conn:
                 version = conn.execute("PRAGMA user_version").fetchone()[0]
-                if version > 3:
+                tables = (
+                    {
+                        row[0]
+                        for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")
+                    }
+                    if version == 4
+                    else set()
+                )
+                required_v4 = {
+                    f"supply_v4_{name}"
+                    for name in (
+                        "meta",
+                        "current",
+                        "settings",
+                        "selection",
+                        "financial",
+                        "shortlist",
+                        "cache",
+                        "history",
+                        "actions",
+                    )
+                }
+                valid_v4 = (
+                    version == 4
+                    and required_v4 <= tables
+                    and conn.execute("SELECT 1 FROM supply_v4_meta WHERE version=4").fetchone()
+                )
+                if version > 3 and not valid_v4:
                     raise DataStoreError(
                         "This database needs a newer app version. No migration performed."
                     )

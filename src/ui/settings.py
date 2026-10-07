@@ -3,6 +3,7 @@
 import streamlit as st
 
 from src.config import Settings
+from src.ui.supplier_intelligence import optional_provider_configured
 
 
 def _remember_demo_mode() -> None:
@@ -15,7 +16,7 @@ def render_settings(settings: Settings) -> None:
     st.toggle(
         "Use deterministic demo analysis",
         key="demo_mode",
-        disabled=not bool(settings.api_key),
+        disabled=not bool(settings.api_key or optional_provider_configured()),
         on_change=_remember_demo_mode,
         help="With a key configured, turn this off to use OpenAI on the next research submission.",
     )
