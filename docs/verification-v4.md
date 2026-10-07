@@ -420,3 +420,235 @@ four test modules and four V4 documents; no new tracked/local artifact files.
 Private configured-secret scan found zero matches in intended Git files; ignored
 credentials/databases/backups/acceptance artifacts remain excluded. Index empty;
 HEAD, original main and v1/v2/v3 tags unchanged. No push, merge, tag or deployment.
+
+## 13. Earlier blocked DataForSEO live attempt — 2026-10-08 Europe/Stockholm
+
+Starting branch feat/real-demand-supplier-v4, HEAD
+20e68ea141e6857fd7ed89605e19b5995c382a3c, clean Git tree; previous full validation
+676passing tests. Missing empty DATAFORSEO_LOGIN/PASSWORD placeholders were added
+only to the ignored V4.env, preserving all existing bytes and credential values.
+The user then supplied API credentials locally. Presence checks and the dotenv
+acceptance launcher confirmed both configured without printing either value.
+
+### Official contract, pricing and spend boundary
+
+The existing adapter uses HTTP Basic authentication and one POST to
+`https://api.dataforseo.com/v3/keywords_data/dataforseo_trends/explore/live`, one
+task containing one exact keyword. Official
+[Explore pricing](https://dataforseo.com/pricing/keywords-data/dataforseo-trends-api-pricing)
+is **USD0.0012/task**. The
+[Live contract](https://docs.dataforseo.com/v3/keywords_data-dataforseo_trends-explore-live/)
+returns results in that response; no retrieval GET is needed. No paid parameters,
+subregion/demography or merged-data endpoint was used. Maximum accepted spend
+**USD0.10**, maximum one paid measurement submission, no retries.
+
+Before the measurement, one documented free
+[account-info GET](https://docs.dataforseo.com/v3/appendix-user-data/)
+confirmed authentication, sufficient balance and account Explore Live rates of
+USD0.0012/request. It reported cost0. No account login, balance value, headers or
+other private account fields were printed or saved. A public supported-location
+CSV GET confirmed Sweden2752, SE, Country; the official
+[locations documentation](https://docs.dataforseo.com/v3/keywords_data-dataforseo_trends-locations/)
+links the 2026-09-01 CSV. No credits, billing or account settings were changed.
+
+### Genuine request and precise blocking response
+
+The actual V4 Streamlit UI ran on loopback8504 using the existing
+`python -m dotenv -f .env run --no-override -- <same-python> <acceptance-launcher>`
+method and original Python3.12 virtual environment. User servers8501/8503 were
+preserved. A new ignored database
+`artifacts/live-dataforseo-portable-blender-20261008.db` was copied consistently
+from the earlier isolated genuine-CJ acceptance database; no user's saved database
+was replaced or migrated. Original CJ observations/selection and financial revision4
+were retained as existing evidence, not claimed as newly fetched CJ data.
+
+Visible product/query **Portable Blender**, target **Sweden (2752)**, quantity1.
+Only the existing **Refresh demand** button submitted the measurement. No full
+product research, supplier refresh or OpenAI request occurred. Actual JSON task:
+keywords[Portable Blender], location_code2752, typeweb,
+date_from2025-10-07, date_to2026-10-06. The adapter uses UTC to choose the closed
+preceding-year window; this attempt occurred at2026-10-07T22:12:30UTC, which is
+2026-10-08 locally. Granularity is determined by returned provider bins; **none was
+returned or observed in this blocked request**, so no weekly/daily value is claimed.
+
+The acceptance-only transport delegated to real HTTP without fixtures or altered
+responses, checked the exact endpoint/query/country/task count and reserved a
+persistent one-dispatch ledger before sending. A second submission, including
+after restart or uncertain completion, is prohibited by that ledger. It captured
+only sanitized response fields in ignored local artifacts; credentials/authentication
+headers were not captured. This harness is not a production-code modification.
+
+Response: **HTTP403**, DataForSEO **status_code40104**, tasks_count0, tasks_error0,
+provider-reported **cost USD0**. Exact sanitized status_message:
+“Please verify your account before using the API. You can complete verification
+in the user panel: https://app.dataforseo.com/ .” Official
+[error40104](https://docs.dataforseo.com/v3/appendix/errors/)
+requires account verification in the user panel. The free account GET accepting
+credentials/balance did not establish that this measurement API was unlocked.
+No repeat submission was made. This is an account-verification blocker, not an
+observed funding failure, successful empty measurement or parsing defect.
+
+### Saved state, local verification and remaining limits
+
+The integration saved FAILED, demand.statusfailed, current_eligibleFalse,
+retainedFalse, zero observations and trendINSUFFICIENT_DATA. No representative
+numeric values, measured granularity, prior/recent averages or trend percentage
+can be reported. The UI retained the label relative search-interest/popularity;
+the failure was not interpreted as zero demand, monthly volume, sales or buyers.
+Supply score stayed7.75/10, supply coverage85%, confidence low, financial revision4;
+market-v4 stayed unavailable/provisional with15% coverage and low confidence.
+No HIGH/STRONG claim or economics requirement was bypassed.
+
+Normal demand-component orchestration reused the genuine FAILED snapshot within
+its one-hour failure-cache TTL: cache_hits[demand], requests0, same exact query,
+geography and dates. A strict no-network test transport guarded that local check;
+it supplied no simulated response and recorded zero requests. This verifies the
+live-failure cache, **not a successful measured-demand cache**. Existing fixtures
+separately verify successful fresh-cache reuse, successful-empty versus failed
+refresh, deterministic trend/missing-zero handling and lifecycle semantics.
+
+Affected existing tests: **64passed**,0failed/skipped,6.14seconds:
+`python -m pytest -q --tb=short tests/test_demand_trend.py tests/test_supply_demand.py
+--basetemp <unique-ignored-absolute-artifacts-directory>`.
+No implementation defect was demonstrated, so no production or test code changed;
+the completed676-test full-suite evidence is retained, not misreported as a new run.
+
+Telemetry: one free account-info API GET (cost0), one measurement POST (cost0),
+zero retrievals/retries, zero new CJ/OpenAI/page calls. The public location CSV GET
+was an uncredentialed documentation check, separate from paid provider telemetry.
+The app's explicit refresh recorded dataforseo_trends1/cache_hits[]; the local
+failure-cache check recorded dataforseo_trends0/cache_hits[demand]. The isolated
+database contains five actions including the three copied earlier-CJ actions.
+Navigation/reopening and restart are checked against action payload digest
+cf7035f5f783110458455f729cb5259b7626e096d1e531cafea270558451572e and the one-dispatch
+ledger; no post-restart refresh is authorized in this acceptance run.
+
+**DataForSEO remains fixture-verified only; live measured demand could not be
+verified.** Authentication, pricing/funding preflight, a genuine blocked measurement
+attempt and the failure lifecycle are distinct from live numeric-data verification.
+Success/empty results, returned values/granularity, deterministic classification
+from real values and successful measurement persistence/cache acceptance remain
+pending account verification and a separately authorized bounded continuation.
+
+Actual restart verification completed with the same dotenv launcher/database:
+Saved Products reopened Portable Blender; Supplier Intelligence restored FAILED,
+the exact query/country/date range/original observation time and INSUFFICIENT_DATA.
+Default Demo Mode disabled Refresh demand and retained financial revision4.
+Navigation, reopening and local scoring left five action payloads byte-equivalent
+to the digest above and the live POST ledger at1. UI proof:
+`C:/Users/Användar/.codex/visualizations/2026/10/06/01a110bf-ffe6-70a3-a95f-b7f446a369be/v4-dataforseo-account-blocker.jpg`.
+The temporary8504 process was stopped; user servers8501/8503 were preserved.
+
+Git whitespace check passed. Private configured-secret scans found zero matches
+in intended Git files, the isolated database and sanitized response/dispatch
+artifacts. .env, databases, backups, launcher and captures remain ignored. Only
+this verification document is changed on the existing V4 branch; no commit, push,
+merge, tag, deployment, commerce/order/payment or billing action occurred.
+
+## 14. Authorized DataForSEO retry after account verification — 2026-10-08
+
+The user completed account verification and explicitly authorized one new bounded
+measurement, bypassing the cached40104 failure. The earlier records, response,
+dispatch ledger and verification report were preserved. The same ignored isolated
+database was reused with a new, separately named one-dispatch guard/capture and
+the dotenv launcher on8504. User servers8501/8503 were preserved. **Only the
+existing Refresh demand UI action** made a measurement request; force=True bypassed
+the failure cache. No supplier/OpenAI/full-product research or automatic retry.
+
+Official Explore Live pricing was checked again: USD0.0012/task. One additional
+free account-info GET confirmed authentication, sufficient balance and the same
+account rate before submission. No billing/account settings were changed. Current
+acceptance spend ceiling USD0.10. The exact request was still Portable Blender,
+Sweden2752, typeweb, dates2025-10-07 through2026-10-06. Its successful response was
+collected at2026-10-07T22:33:19.086745Z (2026-10-08 00:33:19 Europe/Stockholm).
+
+### Genuine returned series and deterministic interpretation
+
+The real response reported HTTP200, overall/task status20000, one result with
+type trends, exact keywords[Portable Blender], location2752, one matching graph,
+and **provider-reported cost USD0.0012**. The existing parser validated request
+echo/query/geography/ranges/relative-index values and stored52 observations as
+SUCCESS/completed. No fixtures or altered provider responses supplied this data.
+
+Returned span2025-10-12 through2026-10-06; the requested span remains retained
+separately. Granularity: **51 seven-day bins plus one three-day ending bin**
+(2026-10-04 through2026-10-06). The three nonmissing observations were:
+
+- 2025-11-16–2025-11-22: **100**.
+- 2025-12-21–2025-12-27: **76**.
+- 2026-01-18–2026-01-24: **62**.
+
+The other49 provider values were0, each stored with missing=True, consistent with
+the documented meaning insufficient data. They are **not observed zero demand**.
+Values are relative search-interest/popularity indices; they are not monthly
+search volume, buyers, sales or independently validated demand. Provider/query/
+Sweden/date ranges/bin granularities/normalization-series ID/original collection
+time/source endpoint were retained; values were not broadened or translated.
+
+Deterministic trend: **INSUFFICIENT_DATA**, reason “Periods are not uniform valid
+intervals.” The documented V3 arithmetic requires uniformly sampled equal windows
+and adequate nonmissing coverage; the three-day tail makes intervals nonuniform.
+The series is also extremely sparse, with no usable recent-window observations.
+No bins were trimmed, zeros converted to usable values or growth/decline invented
+to improve the report. Prior/recent means and change_percent remain null. This
+is the documented conservative calculation, not an observed implementation defect.
+current_eligibleTrue means the successful raw observations are compatible/fresh;
+it does not certify that there is enough data for a numerical trend.
+
+### Scoring, cache and preserved records
+
+Actual UI showed relative search-interest/popularity, SUCCESS/current raw-data
+eligibility and INSUFFICIENT_DATA trend. Supply remained **7.75/10**,85% coverage,
+low confidence and INSUFFICIENT EVIDENCE, with financial revision4 preserved.
+market-v4 remained unavailable/provisional,15% coverage,low confidence and
+INSUFFICIENT EVIDENCE; Numeric trend stayed null. This isolated saved product has
+no compatible market-v3 report context, and the live trend is insufficient, so
+the overlay cannot claim an independently measured opportunity score. Complete
+economics, independent market evidence and other confidence gates were not bypassed.
+No HIGH confidence or STRONG CANDIDATE was claimed.
+
+Normal demand-component orchestration reused the genuine SUCCESS cache with
+force=False: dataforseo_trends0, cache_hits[demand], all52 observations and the
+original timestamp byte-equivalent. A strict no-network transport guarded that
+local check and supplied no fixture response. This verifies successful live-cache
+reuse without rerunning full product research. Both the original failed/cache-hit
+actions and the new success/cache-hit actions remain immutable history. The first
+five action payloads still match the previous attempt digest; seven actions total
+after this success/cache check. Navigation/restart baseline digest:
+0f94b9f3fe04d4e6bc19ba5cc87affdbe655a7b0d39b855e74310300573d7b7b.
+
+Current retry telemetry: **one measurement POST**, zero retrievals/retries,
+one free account-info GET(cost0), actual measurement costUSD0.0012, no new
+CJ/OpenAI/page requests. The UI submission recorded dataforseo_trends1/cache_hits[];
+the success-cache check recorded0/cache_hits[demand]. This run's consumed ledger
+prohibits any second submission, including after restart. The earlier blocked
+POST remains separately recorded at cost0; both attempts together still costUSD0.0012.
+
+Affected existing parsing/trend/lifecycle/scoring tests: **83passed**,0failed/skipped,
+5.86seconds. No production/test code changed; previous full676-test validation
+is retained, not described as a new full-suite run. Successful-empty and synthetic
+failure-refresh cases remain fixture verification; this live response is SUCCESS
+with sparse observations, not SUCCESS_EMPTY.
+
+**Live raw DataForSEO measurement is now verified for this exact query/geography.**
+The earlier account-verification blocker is resolved. A usable numeric trend,
+absolute market demand, positive profitability and a strong opportunity remain
+unverified/unsupported by this sparse result. No further paid request was made.
+
+Actual server restart with the same dotenv launcher/database restored all52
+observations, original collection time, SUCCESS eligibility and INSUFFICIENT_DATA
+trend in Saved Products/Supplier Intelligence. Default Demo Mode disabled Refresh
+demand while showing genuine retained data. Seven action payloads remained
+byte-equivalent to the baseline digest above; the new ledger remained one POST.
+Original five action payloads, failed-response capture and consumed original guard
+were preserved. UI proof:
+`C:/Users/Användar/.codex/visualizations/2026/10/06/01a110bf-ffe6-70a3-a95f-b7f446a369be/v4-dataforseo-live-series.jpg`.
+The temporary8504 process was stopped after verification; user servers8501/8503
+were left running. No new CJ/OpenAI research occurred.
+
+Whitespace check passed; private configured-secret scans found zero matches in
+intended Git files, the isolated database or sanitized response capture. Only
+docs/verification-v4.md is modified; credentials, acceptance scripts, database,
+guard ledgers, captures and screenshots remain local/ignored. Feature HEAD/main/
+release tags unchanged. No commit, push, merge, tag, deployment, orders/payments,
+credits purchase or billing change occurred during this retry.
