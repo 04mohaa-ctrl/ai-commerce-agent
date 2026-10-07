@@ -84,7 +84,11 @@ class CJDropShippingProvider:
     def _failure(self, result: CJTransportOutcome) -> ProviderOutcome | None:
         if result.status != "SUCCESS":
             return ProviderOutcome(
-                status=result.status, notice=result.notice, observed_at=result.observed_at
+                status=result.status,
+                notice=result.notice,
+                observed_at=result.observed_at,
+                limit_source=result.limit_source,
+                retry_blocked_by=result.retry_blocked_by,
             )
         return None
 

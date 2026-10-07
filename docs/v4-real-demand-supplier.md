@@ -45,7 +45,11 @@ SupplierProvider exposes search(query), details(pid), variants(pid), stock(vid),
 shipping(variant, stock, destination). UnavailableSupplierProvider returns typed
 UNAVAILABLE without requests. CJ is optional, reads process CJ_API_KEY only.
 Outcome statuses SUCCESS, SUCCESS_EMPTY, UNAVAILABLE, UNSUPPORTED, RATE_LIMITED,
-FAILED; partial/rejected records, pending and freshness are separate fields.
+BUDGET_EXHAUSTED, FAILED; partial/rejected records, pending and freshness are separate fields.
+Local dispatch-count or time-budget stops use BUDGET_EXHAUSTED; genuine CJ HTTP429
+or rate/quota error codes use RATE_LIMITED. Typed limit_source distinguishes local
+request/time budgets from provider rate/quota limits. retry_blocked_by retains a
+local retry constraint alongside an actual provider RATE_LIMITED response.
 The authenticated transport accepts named operations only, never a caller URL,
 method, path or headers. Exact official host/method/path tuples are allowlisted.
 No order/payment/balance/store/fulfillment wrappers, redirects, proxies, cookies,
@@ -56,7 +60,8 @@ Backend token cache is credential-scoped, bounded, locked, and repr-hidden; use
 returned UTC expiry,60s safety window, no credentials in SQLite/UI/session state.
 One refresh or reacquisition on expiration; one authorized retry after token
 invalidation. Serialize CJ calls at >=1s spacing per credential. Honor Retry-After
-within the action deadline, otherwise return RATE_LIMITED. Retry at most once for
+within the action deadline. A local-only deadline stop returns BUDGET_EXHAUSTED;
+an observed HTTP429 remains RATE_LIMITED even when a retry cannot fit. Retry at most once for
 documented system-busy/time-out or HTTP429/5xx; count every dispatch including auth.
 No automatic demand retries when a paid completion is uncertain.
 
@@ -136,6 +141,18 @@ unknown null; freshness10 only fully current required supply components,otherwis
 null. Fixed weights do not renormalize. Missing contributes zero with explicit
 penalty label; coverage is sum known weights. Below60% score is provisional/null.
 No supplier reliability metric. Single CJ provider risk is always explicit.
+
+User-facing supply aggregate and contributions use **0–10**, as requested:
+displayed raw total = sum(raw_dimension × fixed_weight); missing contributes zero
+without renormalization. Evidence coverage remains a separate percentage.
+Stored supply-v4 aggregates/contributions retain their existing **0–100** compatibility
+representation (ten times the displayed value). The UI divides those values by10;
+stored scores, weights, gates and historical payloads are unchanged. Thus77.5/100
+is displayed as7.75/10; STRONG75/100 and WORTH55/100 correspond to7.5/10 and5.5/10,
+subject to all existing completeness/freshness/selection gates. This is a unit
+conversion for presentation, not a new scoring formula or score version.
+market-v4 aggregates and contributions remain **0–100**, explicitly labeled in
+the UI; its raw dimensions, including supply feasibility, remain **0–10**.
 
 market-v4 weights18/12/12/25/8/10/15 retain the approved demand/trend/competition/
 profit/marketing/evidence/supply order. Use accepted V3 evidence gates, raw dimensions

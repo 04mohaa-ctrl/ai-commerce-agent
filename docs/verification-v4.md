@@ -9,7 +9,10 @@ Historical 389 plus four V3 demand-retention regressions accounts for the baseli
 The unrelated PNG was preserved, with matching SHA-256, outside the repository at
 `../ai-commerce-agent-local-files/uppgift3.png` before the gate was rerun.
 
-V4 branch: `feat/real-demand-supplier-v4`; HEAD/base remains the V3 merge above.
+V4 branch: `feat/real-demand-supplier-v4`; V3 baseline remains the merge above.
+The subsequently authorized feature-branch save is
+`a5e44356faec13f0b520376c04ce316df03fbe97`. The bounded CJ acceptance and focused
+regressions in section 11 are uncommitted changes on top of that save.
 Managed worktree: `C:/Users/Användar/.codex/worktrees/real-demand-supplier-v4/ai-commerce-agent`.
 At implementation handoff, original main was clean and V4 intentionally had
 uncommitted changes with an empty index. No commit, push, merge, tag or deployment
@@ -113,7 +116,7 @@ applied once. Compatible selected stock/freight/cost, complete economics, curren
 independent market evidence and measured demand gate HIGH/STRONG. Cheap cost alone
 cannot create a strong recommendation. Risk flags cite actual snapshots.
 
-## 7. Live versus fixture product acceptance
+## 7. Initial live versus fixture product acceptance (before CJ configuration)
 
 Actual Streamlit ran on loopback8503 with an isolated ignored acceptance database.
 Main Research field: **Electric heated lunch box**, **United States**, **quantity1**,
@@ -140,7 +143,7 @@ buttons while showing retained observations. Original live citations stayed save
 A local screenshot records the restored, explicitly fixture-labeled offer:
 `C:/Users/Användar/.codex/visualizations/2026/10/06/01a110bf-ffe6-70a3-a95f-b7f446a369be/v4-supplier-ui.jpg`.
 
-## 8. Tests, quality and independent review
+## 8. Initial tests, quality and independent review
 
 Final pre-commit full run: **658 passed, 0 failed, 0 skipped**, 43.49seconds: original393 plus
 265 new cases. PowerShell used the original Python3.12 environment and a unique
@@ -167,7 +170,7 @@ empty quote siblings, backup overwrite, shortlist method identity, percentage-un
 currency bypass and HTTP503 Retry-After. All were reproduced and fixed with tests.
 No reviewer edited source or made live provider calls.
 
-## 9. Telemetry, security and limits
+## 9. Initial telemetry, security and limits
 
 Actual live run:2 OpenAI model requests,1 web-search use,4 page sources/fetches,
 6 dispatched page-request attempts (including policy fetches),0 DataForSEO requests,
@@ -205,3 +208,215 @@ Prioritize user-configured bounded live supplier/demand acceptance and independe
 supplier/sample quality evidence before adding more providers. Consider a reviewed
 currency source only if multi-currency decisions become necessary. No V5 feature
 or commerce capability was started.
+
+## 11. Bounded genuine CJ acceptance after local configuration — 2026-10-07 UTC
+
+This later acceptance supersedes the initial CJ-unavailable result above. It does
+not turn the earlier fixture observations into live evidence. The user configured
+CJ_API_KEY locally. The existing V4 server used the original Python3.12 virtual
+environment and a dotenv launcher; only configuration booleans/process metadata
+were inspected. No credential value was printed or changed. DataForSEO credentials
+remained absent; **fixture-verified only. Measured demand data unavailable.**
+
+### Saved manual run: local budget exhaustion, not a demonstrated CJ rate limit
+
+The latest manual Portable Blender/Sweden/quantity1 supplier action started at
+17:44:32 UTC. It dispatched search1, details3, variants3 and stock5: twelve actual
+requests, zero retries, with an existing authentication token. The next stock
+attempt for variant1543179507706900480 returned RATE_LIMITED with the exact notice
+`CJ action research budget exhausted.` Transport emitted this locally before
+dispatch, so that operation made no HTTP request. There is no CJ HTTP429 or CJ
+rate/quota error code establishing a genuine provider rate limit in this action.
+The twelve-attempt research budget and shipping budget were not increased.
+
+The original USD11 subtotal came from the saved V3/Demo product-cost assumption,
+not an applied CJ observation. No compatible offer was selected, so shipping
+refresh was guarded without dispatch and supply coverage was0%. Broad Portable
+Blender identity also left decisive capacity/color unspecified. Confirmation must
+not manufacture those product requirements or missing supplier facts.
+
+### Isolation, cache reuse and incremental corrections
+
+Actual Streamlit acceptance used loopback8504 and the ignored isolated database
+`artifacts/live-cj-portable-blender-20261007.db`. The launcher loaded the worktree's
+ignored local environment and used the real CJ provider, without response fixtures,
+fake credentials, monkeypatching or network interception. The user's original
+database and servers8501/8503 were preserved.
+
+The isolated target retained the name **Portable Blender**, with explicit local
+requirements **350ml, pink, USB rechargeable**, customer country **Sweden (SE)**,
+quantity **1**, maximum estimated delivery **14days**. These are acceptance target
+requirements, not invented provider observations. Copied V3 product-cost/selling
+price inputs were cleared in the isolated target's V4 initial financial inputs;
+the separately labeled saved Demo analysis is not live market evidence.
+
+Twelve fresh, successful, genuine CJ component caches from the manual run were
+copied with original timestamps. Query/provider request parameters remained the
+same; matching was recalculated against the explicit target. No failed records,
+simulated records or timestamp resets were used. Catalog freshness is24h;
+stock/freight freshness is6h. Selected stock was reused, not fetched again.
+
+Two reproducible matching blockers were corrected through failing regressions:
+the second name-only identity check discarded explicit description options; an
+explicitly observed USB-rechargeable device unnecessarily required unknown mains
+plug/voltage. Color options now remain in the dedicated attribute comparison.
+The narrow observed USB charging rule does not invent electrical specifications
+or verify an included adapter. Bare USB is insufficient; observed mains/AC/adapter/
+wall-charger/dual-power evidence prevents exemption. Independent review reproduced
+two further safeguards RED: explicit target voltage/plug must remain required, and
+mains facts in variant option labels must be considered. Both were fixed; the
+reviewer independently exercised eight boundary cases and reported no remaining
+material findings. Budgets, provider architecture and financial rules unchanged.
+
+### Actual requests and explicit UI actions
+
+One Find/Analyze action used existing catalog/details/variant caches, dispatched
+authentication1 and stock2 successfully, and persisted its telemetry. The stock
+requests were for variants1436889474071138304 and1543179507706900480; the selected
+pink variant's genuine stock observation remained cached. The supplier action
+recorded nine component-cache hits (search1/details3/variants3/stock2) plus one
+token-cache hit. There were no retries or local/provider rate-limit failures.
+
+The UI required observed-attribute confirmation and explicit selection of:
+
+- CJ product1392009095543918592: 350ML Electric Juicer Blender Mixer USB
+  Rechargeable Machine Household Portable Blender Maker Cup Kitchen Tool Kit.
+- Pink variant1392009096907067392, SKU CJJD112318803CX, 350ml capacity from the
+  observed title and Pink from the observed variant_key. Classification:
+  LIKELY_MATCH, no contradictions/missing decisive attributes; explicit confirmation
+  retained. Included mains adapter and food-contact safety remain unverified.
+- Warehouse/area1, actual storage2991a224-737b-42a3-a1d9-8ccd2936b341, originCN:
+  total2, CJ2, factory0, observed17:44:37 UTC. Factory-only storage rows were not
+  substituted for this CJ inventory. Supplier unit price USD17.19, observed
+ 17:44:35 UTC; declared parcel660g,310/170/140mm.
+
+One explicit Refresh shipping dispatched one genuine freight request and returned
+twelve methods at21:02:19 UTC, bound to that immutable variant/parcel, actual
+storage, destinationSE and quantity1. Refresh retained the old selection as history;
+it did not silently adopt costs. The UI explicitly confirmed/re-selected
+**CJPacket Eub Special Line, USD19.34 total, estimated8–12days**, within the14day
+target. The cheaper USD14.43 method estimated12–20days and was not selected.
+Tracking remained unknown. No postal/region address or conversion was invented.
+
+Across this isolated live acceptance, actual CJ dispatch totals were:
+**authentication1 + stock2 + freight1 =4**, retries0. Catalog/details/variants
+requests during this acceptance were0, relying on genuine earlier live caches.
+Shipping reused the authentication token once more. OpenAI requests0, web-search
+uses0, page fetches0 and DataForSEO requests0: those optional stages were unavailable
+without worktree credentials. Persisted actions: supplier1, unavailable-demand1,
+shipping1. Provider actually used: CJ. No inferred dollar API cost was reported.
+
+### Finances, scoring, restart and navigation
+
+Explicit Apply observed supplier cost created revision2 with USD17.19 OBSERVED
+provenance linked to the variant observation. Apply current shipping quote created
+revision3 with USD19.34 DERIVED provenance (quote total divided by quantity1),
+linked to the quote and its original timestamp. Saving explicit packaging0 created
+revision4 with ESTIMATED provenance; blank customs remained UNKNOWN. Product cost
+and shipping retained their observed/derived provenance after that manual save.
+
+Known compatible unit subtotal: **USD36.53**. Duties/customs, handling, other costs,
+selling price, payment fees, returns and advertising remained unknown. Consequently
+complete landed cost, net profit and break-even CPA remained Unknown. The quote's
+provider-reported taxes_fee0/clearance_operation_fee0 were retained as quote data;
+they did not establish complete import/customs liabilities or auto-fill finances.
+
+Supply score: **7.75 / 10** (stored aggregate **77.5 / 100**), coverage **85%**, confidence **low**, recommendation
+**INSUFFICIENT EVIDENCE**. Cost-completeness contributed zero with15% coverage
+missing; on the displayed0–10 scale, LIKELY match contributes1.75, stock2,
+freight2, delivery1, freshness1. The initial live UI showed the stored77.5 without
+a denominator; section12 records the presentation correction without new provider requests.
+Actual risk flags: SINGLE_PROVIDER, INCOMPLETE_LANDED_COST and HIGH_FREIGHT
+(USD19.34 freight exceeds USD17.19 product cost). Overall market-v4 opportunity
+coverage15%, score unavailable/provisional, low confidence; no HIGH/STRONG claim.
+
+Settings/Saved Products/Supplier Intelligence navigation added no requests. The
+isolated server was stopped, restarted with the same database, and the actual UI
+restored selected variant/storage/quote, observed/derived provenance, packaging0,
+unknown customs and financial revision4. Default Demo Mode disabled external
+refresh buttons while retaining genuine observations. The three persisted action
+payloads remained byte-equivalent across navigation/restart (SHA-256
+7a52ad78eb6838121a1667225ff1d2092daf5fb8569c38154f63c73cf0d5be0b); dispatch totals
+remained4. No research/refresh action was issued after restart. Live UI proofs:
+`C:/Users/Användar/.codex/visualizations/2026/10/06/01a110bf-ffe6-70a3-a95f-b7f446a369be/v4-cj-live-economics.jpg`
+and `v4-cj-live-score.jpg` in that same directory. These show persisted genuine
+observations in Demo Mode, not fixture-generated data.
+
+Final regression suite after all focused corrections: **668 passed**, zero failed/
+skipped,123.77seconds. Ruff lint passed; formatter check109files passed; compilation
+of `src` and `app.py` and Git whitespace checks passed. Independent review confirmed both
+findings resolved. The original393 baseline tests remain unchanged. Credentials,
+databases, backups, acceptance launcher and screenshots remain local/ignored;
+only matching source, matching regressions and this report are intended changes.
+Final private scans found zero configured-secret matches in intended Git files or
+the isolated database and no persisted authentication-token fields. Index empty;
+feature HEAD, original clean main and v1/v2/v3 tag objects remained unchanged.
+
+Remaining live limits: selected catalog/variant/stock data was fresh cached evidence,
+not newly requested in this acceptance; stock may change. Country-only freight,
+delivery estimates, supplier listing claims and sample quality are not guarantees.
+Included adapter, certification, food-contact safety, tracking, complete import
+costs, profitability, genuine demand and account-specific rate/quota behavior were
+not verified. DataForSEO remains unavailable and fixture-verified only. No orders,
+payment endpoints, commits, pushes, merges, tags or deployment occurred in this
+acceptance. The temporary8504 server was stopped after verification; user servers
+were left running.
+
+## 12. Focused score-scale and limit-status corrections — 2026-10-07
+
+The user requested an explicit0–10 supply score. The implementation used0–10
+raw dimensions but scaled aggregate/contributions to0–100, and omitted aggregate
+scale labels. Supply UI now shows **7.75 / 10**, raw total **7.75 / 10**, and
+contributions labeled **/10** for the live observation snapshot above. Evidence
+coverage remains **85%**. market-v4 labels its distinct **/100** aggregate and
+contributions; raw dimensions remain **/10**. Stored supply77.5/100, score weights,
+recommendation thresholds, financial values and all V1/V2/V3 records are unchanged.
+No scoring-version or database migration is required for presentation unit conversion.
+
+Transport now uses **BUDGET_EXHAUSTED** with **LOCAL_REQUEST_BUDGET** or
+**LOCAL_TIME_BUDGET** only for local request-count/time constraints. UI labels these
+as local budget exhaustion. CJ HTTP429 uses **RATE_LIMITED / PROVIDER_RATE_LIMIT**;
+CJ rate/quota codes use **RATE_LIMITED / PROVIDER_QUOTA_LIMIT**. A genuine429 remains
+RATE_LIMITED when a retry cannot fit; **retry_blocked_by** records the local constraint
+separately. These fields pass through sanitized provider outcomes into caches,
+report stages and persisted per-action telemetry. Counts, caps and cooldowns unchanged.
+
+Known historical CJ notices are interpreted read-only in both stage labels and
+displayed telemetry. The old generic budget notice does not distinguish count from
+time, so its source is **LOCAL_ACTION_BUDGET** rather than an invented specific
+cause; the manual action's twelve actual dispatches establish its request-cap
+exhaustion separately. Unknown historical origins remain explicitly unavailable.
+Immutable action records and old reports are not rewritten by navigation.
+
+Regressions first reproduced the unlabeled/wrong display scale and local-limit
+misclassification. Checks cover displayed7.75/10 and hand-derived contributions,
+unchanged stored aggregates, market /100 labels, count/time caps with no extra
+dispatch, actual429 with a blocked retry, provider quota codes, old telemetry
+display without database writes, and real transport/provider-to-persistence origin
+propagation across restart. Rate/quota scenarios use HTTP-boundary fixtures;
+**they are not live rate-limit verification**. No new CJ, OpenAI or DataForSEO
+requests are needed or authorized by navigation during these corrections.
+
+Final full suite for these corrections: **676 passed, zero failed/skipped**,
+66.75seconds, using the original Python environment and a unique ignored absolute
+artifacts/pytest-score-limit-final-UUID --basetemp. This includes the668 previously
+passing cases and eight added presentation/legacy/persisted-origin cases.
+
+Final lint, formatting (109files), compilation and Git whitespace checks passed.
+Independent read-only review found no material issues; it separately exercised
+legacy notice/immutability cases, old/new optional-field loading, blocked429 retries
+under both count/time limits and both display scales. No reviewer provider calls.
+Actual Streamlit on the same isolated database showed7.75/10,85% coverage and
+financial revision4 in Demo Mode. Known subtotal/provenance remained unchanged;
+navigation action payload digest remained7a52ad78eb6838121a1667225ff1d2092daf5fb8569c38154f63c73cf0d5be0b.
+Dispatch counts remained auth1/stock2/shipping1; **zero new provider requests**.
+Updated proof:
+`C:/Users/Användar/.codex/visualizations/2026/10/06/01a110bf-ffe6-70a3-a95f-b7f446a369be/v4-cj-score-scale.jpg`.
+The temporary server was stopped after the read-only UI check.
+
+All changes remain uncommitted on feat/real-demand-supplier-v4. The earlier matching
+fixes and live report were preserved. The final diff contains six source modules,
+four test modules and four V4 documents; no new tracked/local artifact files.
+Private configured-secret scan found zero matches in intended Git files; ignored
+credentials/databases/backups/acceptance artifacts remain excluded. Index empty;
+HEAD, original main and v1/v2/v3 tags unchanged. No push, merge, tag or deployment.

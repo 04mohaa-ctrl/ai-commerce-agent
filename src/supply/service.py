@@ -21,6 +21,7 @@ from src.supply.models import (
     SupplierProductCandidate,
     SupplierVariant,
     SupplyIntelligenceReport,
+    normalize_limit_stage,
 )
 
 
@@ -75,6 +76,11 @@ class SupplierIntelligenceService:
             "notice": outcome.notice,
             **parameters,
         }
+        if outcome.limit_source:
+            stage["limit_source"] = outcome.limit_source
+        if outcome.retry_blocked_by:
+            stage["retry_blocked_by"] = outcome.retry_blocked_by
+        stage = normalize_limit_stage(stage)
         run.stages.append(stage)
         return outcome
 

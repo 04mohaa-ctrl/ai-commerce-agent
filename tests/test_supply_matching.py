@@ -227,3 +227,82 @@ def test_documented_composite_variant_key_supplies_observed_electrical_facts():
     rejected = match("Electric heated lunch box", attributes={"variant_key": "EU Plug-230V"})
     assert rejected.outcome == "NO_MATCH"
     assert any("voltage" in reason for reason in rejected.contradictions)
+
+
+def test_declared_description_options_are_not_lost_in_name_only_identity_check():
+    result = match(
+        "Reusable lunch box",
+        "Reusable lunch box 500ml white",
+        description="Capacity: 500ml; Color: white",
+    )
+    assert result.outcome == "MATCH"
+    assert not result.missing_attributes
+
+
+def test_observed_usb_rechargeable_variant_does_not_require_a_mains_plug():
+    candidate = SupplierProductCandidate(
+        provider="cj", product_id="p1", name="350ml electric portable blender USB rechargeable"
+    )
+    variant = SupplierVariant(
+        provider="cj",
+        product_id="p1",
+        variant_id="v1",
+        name=candidate.name + " pink",
+        attributes={"variant_key": "Pink"},
+    )
+    product = Product(
+        name="Portable Blender",
+        category="Kitchen gadgets",
+        description="Capacity: 350ml; Color: pink",
+    )
+    result = match_supplier(product, candidate, variant, Destination(country="SE"))
+    assert result.outcome == "LIKELY_MATCH"
+    assert not result.missing_attributes
+    assert destination_issue(candidate, variant, Destination(country="SE")) is None
+    assert any("mains adapter" in reason for reason in result.reasons)
+    assert "voltage" not in variant.attributes
+
+
+@pytest.mark.parametrize(
+    "extra", ["110V US plug", "with AC adapter", "with wall charger", "dual power"]
+)
+def test_usb_claim_cannot_bypass_mains_evidence_requirements(extra):
+    title = "Electric portable blender USB rechargeable " + extra
+    candidate = SupplierProductCandidate(provider="cj", product_id="p1", name=title)
+    variant = SupplierVariant(provider="cj", product_id="p1", variant_id="v1", name=title)
+    assert destination_issue(candidate, variant, Destination(country="SE")) is not None
+
+
+def test_bare_usb_word_does_not_establish_a_non_mains_power_source():
+    title = "Electric portable blender USB"
+    candidate = SupplierProductCandidate(provider="cj", product_id="p1", name=title)
+    variant = SupplierVariant(provider="cj", product_id="p1", variant_id="v1", name=title)
+    assert destination_issue(candidate, variant, Destination(country="SE")) is not None
+
+
+def test_usb_charging_does_not_erase_explicit_target_electrical_requirements():
+    result = match(
+        "Electric portable blender",
+        "Electric portable blender USB rechargeable",
+        description="Voltage: 230V; Plug: EU",
+        country="SE",
+    )
+    assert result.outcome == "AMBIGUOUS"
+    assert {"voltage", "plug"}.issubset(result.missing_attributes)
+
+
+@pytest.mark.parametrize("option", ["with AC adapter", "with wall charger"])
+def test_usb_title_cannot_hide_mains_requirements_in_observed_variant_options(option):
+    title = "Electric portable blender USB rechargeable"
+    result = match(title, attributes={"variant_key": option}, country="SE")
+    assert result.outcome == "AMBIGUOUS"
+    assert {"voltage", "plug"}.issubset(result.missing_attributes)
+    candidate = SupplierProductCandidate(provider="cj", product_id="p1", name=title)
+    variant = SupplierVariant(
+        provider="cj",
+        product_id="p1",
+        variant_id="v1",
+        name=title,
+        attributes={"variant_key": option},
+    )
+    assert destination_issue(candidate, variant, Destination(country="SE")) is not None

@@ -29,9 +29,47 @@ Count = Annotated[int, Field(strict=True, ge=0)]
 PositiveCount = Annotated[int, Field(strict=True, gt=0)]
 Money = Annotated[Decimal, Field(ge=0, allow_inf_nan=False)]
 OutcomeStatus = Literal[
-    "SUCCESS", "SUCCESS_EMPTY", "UNAVAILABLE", "UNSUPPORTED", "RATE_LIMITED", "FAILED"
+    "SUCCESS",
+    "SUCCESS_EMPTY",
+    "UNAVAILABLE",
+    "UNSUPPORTED",
+    "RATE_LIMITED",
+    "BUDGET_EXHAUSTED",
+    "FAILED",
+]
+LocalLimit = Literal["LOCAL_REQUEST_BUDGET", "LOCAL_TIME_BUDGET"]
+LimitSource = Literal[
+    "LOCAL_REQUEST_BUDGET",
+    "LOCAL_TIME_BUDGET",
+    "LOCAL_ACTION_BUDGET",
+    "PROVIDER_RATE_LIMIT",
+    "PROVIDER_QUOTA_LIMIT",
 ]
 MatchOutcome = Literal["MATCH", "LIKELY_MATCH", "AMBIGUOUS", "NO_MATCH"]
+
+
+def normalize_limit_stage(stage):
+    """Read-only interpretation of known pre-fix CJ notices; never infer an unknown origin."""
+    stage = dict(stage)
+    if (
+        stage.get("provider") != "cj"
+        or stage.get("status") != "RATE_LIMITED"
+        or stage.get("limit_source")
+    ):
+        return stage
+    notice = stage.get("notice", "")
+    local = {
+        "CJ action research budget exhausted.": "LOCAL_ACTION_BUDGET",
+        "CJ action deadline reached before dispatch.": "LOCAL_TIME_BUDGET",
+        "CJ action deadline reached.": "LOCAL_TIME_BUDGET",
+    }
+    if notice in local:
+        stage.update(status="BUDGET_EXHAUSTED", limit_source=local[notice])
+    elif notice == "CJ rate limit reached.":
+        stage["limit_source"] = "PROVIDER_RATE_LIMIT"
+    elif notice in {f"CJ rate or quota limit ({code})." for code in (1600200, 1600201, 16900500)}:
+        stage["limit_source"] = "PROVIDER_QUOTA_LIMIT"
+    return stage
 
 
 class FrozenDict(dict):
@@ -358,6 +396,8 @@ class ProviderOutcome(SupplyModel):
     partial: Annotated[bool, Field(strict=True)] = False
     rejected: Count = 0
     notice: str = ""
+    limit_source: LimitSource | None = None
+    retry_blocked_by: LocalLimit | None = None
     observed_at: datetime = Field(default_factory=utc_now)
 
     @model_validator(mode="after")

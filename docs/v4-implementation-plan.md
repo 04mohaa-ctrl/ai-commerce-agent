@@ -97,6 +97,11 @@ confidence,recommendation,risks,version. score_supply(selection,destination,fina
 stages,now=None),score_opportunity(market,selection,destination,financial,stages,...).
 Formulas and gates exactly design; recompute only V4, never market-v3 mutating calls.
 
+Supply UI aggregate/contributions explicitly use0–10; market-v4 uses0–100.
+Existing stored0–100 supply values and gates remain unchanged; the supply display
+converts units only. Local BUDGET_EXHAUSTED and provider RATE_LIMITED have typed
+limit_source telemetry, with retry_blocked_by preserving actual provider responses.
+
 - [x] Red tests explicit application/no-match/likely confirmation/stale/wrongquote/
   mixed currency/unknown costs/provenance revision/manual preservation.
 - [x] Red scoring tests fixed weights/null missing/coverage<60/mandatory gates/

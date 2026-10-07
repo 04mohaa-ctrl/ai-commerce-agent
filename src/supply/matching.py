@@ -159,7 +159,27 @@ def _identity_name(name):
     name = re.sub(r"\b(?:us|usa|eu|uk|gb)\s*(?:plug|adapter)\b", "", name)
     name = re.sub(r"\btype\s+[abcefg]\s*(?:plug)?\b", "", name)
     name = _MODEL.sub("", name)
-    return normalized_name(name)
+    # Variant options are compared above from both titles and explicit attributes.
+    # A second name-only discriminator check must not discard description facts.
+    return " ".join(word for word in normalized_name(name).split() if word not in COLORS)
+
+
+def _usb_charging_only(text, found, attributes=None):
+    """Recognize an observed charging mode, without inventing voltage or an adapter."""
+    text += "\n" + " ".join(f"{key}: {value}" for key, value in (attributes or {}).items())
+    explicit = re.search(
+        r"\busb[\s-]+(?:rechargeable|charging|powered)\b|"
+        r"\b(?:charged|charging|powered)\s+(?:via|by)\s+usb\b",
+        text,
+        re.I,
+    )
+    mains = re.search(r"\b(?:mains|ac|adapter|wall|charger|dual[\s-]+power)\b", text, re.I)
+    return bool(
+        explicit
+        and not mains
+        and not found.get("plug")
+        and all(0 < low <= high <= 48 for low, high in found.get("voltage", set()))
+    )
 
 
 def _electrical_issues(found, destination, electrical):
@@ -192,7 +212,9 @@ def destination_issue(
         return "Supplier product identity conflict."
     title = candidate.name + "\n" + variant.name
     found = _details(title, variant.attributes)
-    electrical = bool(_ELECTRICAL.search(title) or found.get("voltage") or found.get("plug"))
+    electrical = bool(
+        _ELECTRICAL.search(title) or found.get("voltage") or found.get("plug")
+    ) and not _usb_charging_only(title, found, variant.attributes)
     contradictions, missing = _electrical_issues(found, destination, electrical)
     if contradictions:
         return " ".join(contradictions)
@@ -222,6 +244,9 @@ def match_supplier(
         )
     wanted = _details(product.name + "\n" + product.description)
     found = _details(candidate.name + "\n" + variant.name, variant.attributes)
+    usb_charging = _usb_charging_only(
+        candidate.name + "\n" + variant.name, found, variant.attributes
+    )
     if candidate.brand:
         found.setdefault("brand", set()).add(normalized_name(candidate.brand))
     contradictions = []
@@ -239,6 +264,8 @@ def match_supplier(
             contradictions.append(f"Conflicting {field} declarations.")
         if field not in {"voltage", "plug"} and bool(expected) != bool(actual):
             missing.append(field)
+        if field in {"voltage", "plug"} and expected and not actual:
+            missing.append(field)
         if len(actual) > 1 and field in {"brand", "model", "count", "capacity", "dimensions"}:
             contradictions.append(f"Conflicting supplier {field} declarations.")
 
@@ -246,7 +273,7 @@ def match_supplier(
         wanted.get("voltage") or wanted.get("plug")
     )
     electrical_contradictions, electrical_missing = _electrical_issues(
-        found, destination, electrical
+        found, destination, electrical and not usb_charging
     )
     contradictions.extend(electrical_contradictions)
     missing.extend(electrical_missing)
@@ -299,9 +326,19 @@ def match_supplier(
     if candidate_match.outcome == variant_match.outcome == "MATCH":
         return SupplierMatch(
             outcome="MATCH",
-            reasons=["Exact normalized identity and compatible observed variant attributes."],
+            reasons=["Exact normalized identity and compatible observed variant attributes."]
+            + (
+                ["Observed USB charging; included mains adapter compatibility is unverified."]
+                if usb_charging
+                else []
+            ),
         )
     return SupplierMatch(
         outcome="LIKELY_MATCH",
-        reasons=["Related identity words; explicit attribute confirmation required."],
+        reasons=["Related identity words; explicit attribute confirmation required."]
+        + (
+            ["Observed USB charging; included mains adapter compatibility is unverified."]
+            if usb_charging
+            else []
+        ),
     )

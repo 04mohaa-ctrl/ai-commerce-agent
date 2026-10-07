@@ -1,3 +1,5 @@
+import pytest
+
 from src.database.database import ProductRepository
 from src.database.supply_repository import SupplyRepository
 from src.supply.models import (
@@ -11,6 +13,52 @@ from src.supply.models import (
     SupplierVariant,
 )
 from src.supply.service import SupplierIntelligenceService
+
+
+@pytest.mark.parametrize(
+    "budget,provider_reply,status,source,dispatch_count",
+    [
+        (1, "unused", "BUDGET_EXHAUSTED", "LOCAL_REQUEST_BUDGET", 1),
+        (12, "429", "RATE_LIMITED", "PROVIDER_RATE_LIMIT", 2),
+        (12, "quota", "RATE_LIMITED", "PROVIDER_QUOTA_LIMIT", 2),
+    ],
+)
+def test_real_cj_limit_origin_survives_cache_report_and_action_restart(
+    tmp_path, monkeypatch, product, budget, provider_reply, status, source, dispatch_count
+):
+    import httpx
+
+    from src.supply.cj_provider import CJDropShippingProvider
+    from tests.test_cj_transport import Clock, auth, make_transport
+
+    clock = Clock()
+    dispatched = []
+
+    def handler(request):
+        dispatched.append(request.url.path)
+        if "authentication" in request.url.path:
+            return httpx.Response(200, json=auth(clock))
+        if provider_reply == "429":
+            return httpx.Response(429, headers={"Retry-After": "100"})
+        assert provider_reply == "quota"
+        return httpx.Response(200, json={"code": 1600201, "result": False})
+
+    transport, _ = make_transport(monkeypatch, handler, clock=clock)
+    provider = CJDropShippingProvider(transport=transport)
+    provider.reset_action = lambda run, **kwargs: transport.reset_action(run, max_requests=budget)
+    repo = SupplyRepository(
+        ProductRepository(tmp_path / "limits.db"), backup_dir=tmp_path / "backup"
+    )
+    report = SupplierIntelligenceService(repo, provider).research(product, Destination())
+    assert len(dispatched) == dispatch_count
+    assert report.telemetry.requests == ({"auth": 1} if budget == 1 else {"auth": 1, "search": 1})
+    assert report.stages[0]["status"] == status
+    assert report.stages[0]["limit_source"] == source
+    if provider_reply == "429":
+        assert report.stages[0]["retry_blocked_by"] == "LOCAL_TIME_BUDGET"
+    restarted = SupplyRepository(ProductRepository(repo.path))
+    assert restarted.get_report(product.id).telemetry.stages[0]["limit_source"] == source
+    assert restarted.get_latest_action(product.id).stages[0]["status"] == status
 
 
 class FixtureSupplier:

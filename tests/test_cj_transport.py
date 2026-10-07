@@ -189,7 +189,8 @@ def test_every_dispatch_counts_budget_and_reset_binds_new_telemetry(monkeypatch)
     transport.reset_action(old, max_requests=2)
     assert transport.request("stock", {"vid": "v"}).status == "SUCCESS"
     exhausted = transport.request("stock", {"vid": "v"})
-    assert exhausted.status == "RATE_LIMITED"
+    assert exhausted.status == "BUDGET_EXHAUSTED"
+    assert exhausted.limit_source == "LOCAL_REQUEST_BUDGET"
     assert sum(old.requests.values()) == 2
     new = ActionTelemetry(action="refresh_shipping")
     transport.reset_action(new, max_requests=4)
@@ -253,6 +254,9 @@ def test_typed_provider_codes_discard_raw_messages(monkeypatch, code, status, re
     transport, _ = make_transport(monkeypatch, handler, clock=clock)
     result = transport.request("stock", {"vid": "v"})
     assert result.status == status
+    if status == "RATE_LIMITED":
+        assert result.limit_source == "PROVIDER_QUOTA_LIMIT"
+        assert result.code == code
     assert result.data is None
     assert transport.telemetry.retries == retries
     assert "fixture-" not in repr(result)
@@ -326,7 +330,9 @@ def test_default_budget_stops_after_twelve_dispatches_including_auth(monkeypatch
     transport, _ = make_transport(monkeypatch, handler, clock=clock)
     for _ in range(11):
         assert transport.request("stock", {"vid": "v"}).status == "SUCCESS"
-    assert transport.request("stock", {"vid": "v"}).status == "RATE_LIMITED"
+    outcome = transport.request("stock", {"vid": "v"})
+    assert outcome.status == "BUDGET_EXHAUSTED"
+    assert outcome.limit_source == "LOCAL_REQUEST_BUDGET"
     assert transport.telemetry.requests == {"auth": 1, "stock": 11}
 
 
@@ -402,7 +408,9 @@ def test_deadline_blocks_dispatch_even_when_token_remains_valid(monkeypatch):
     transport, _ = make_transport(monkeypatch, handler, clock=clock)
     transport.request("stock", {"vid": "v"})
     clock.sleep(90)
-    assert transport.request("stock", {"vid": "v"}).status == "RATE_LIMITED"
+    outcome = transport.request("stock", {"vid": "v"})
+    assert outcome.status == "BUDGET_EXHAUSTED"
+    assert outcome.limit_source == "LOCAL_TIME_BUDGET"
     assert transport.telemetry.requests == {"auth": 1, "stock": 1}
 
 
@@ -511,9 +519,14 @@ def test_retry_after_longer_than_action_remains_enforced_across_actions(monkeypa
         return httpx.Response(429, headers={"Retry-After": "100"})
 
     transport, _ = make_transport(monkeypatch, handler, clock=clock)
-    assert transport.request("stock", {"vid": "v"}).status == "RATE_LIMITED"
+    outcome = transport.request("stock", {"vid": "v"})
+    assert outcome.status == "RATE_LIMITED"
+    assert outcome.limit_source == "PROVIDER_RATE_LIMIT"
+    assert outcome.retry_blocked_by == "LOCAL_TIME_BUDGET"
     transport.reset_action(transport.telemetry)
-    assert transport.request("stock", {"vid": "v"}).status == "RATE_LIMITED"
+    outcome = transport.request("stock", {"vid": "v"})
+    assert outcome.status == "BUDGET_EXHAUSTED"
+    assert outcome.limit_source == "LOCAL_TIME_BUDGET"
     assert transport.telemetry.requests == {"auth": 1, "stock": 1}
     assert clock.seconds == 1
 
@@ -561,8 +574,10 @@ def test_server_retry_after_beyond_action_reports_limited_and_keeps_cooldown(mon
         return httpx.Response(503, headers={"Retry-After": "100"})
 
     transport, _ = make_transport(monkeypatch, handler, clock=clock)
-    assert transport.request("stock", {"vid": "v"}).status == "RATE_LIMITED"
+    outcome = transport.request("stock", {"vid": "v"})
+    assert outcome.status == "BUDGET_EXHAUSTED"
+    assert outcome.limit_source == "LOCAL_TIME_BUDGET"
     transport.reset_action(transport.telemetry)
-    assert transport.request("stock", {"vid": "v"}).status == "RATE_LIMITED"
+    assert transport.request("stock", {"vid": "v"}).status == "BUDGET_EXHAUSTED"
     assert transport.telemetry.requests == {"auth": 1, "stock": 1}
     assert transport.telemetry.retries == 0 and clock.seconds == 1

@@ -20,7 +20,7 @@ from src.supply.economics import (
     supplier_cost_issue,
     utc_now,
 )
-from src.supply.models import Destination, SupplierSelection
+from src.supply.models import Destination, SupplierSelection, normalize_limit_stage
 from src.supply.scoring import score_opportunity, score_supply
 from src.supply.service import SupplierIntelligenceService
 from src.ui.market_economics import LABELS
@@ -79,13 +79,20 @@ def render_target_inputs():
 
 def _score_view(score):
     st.markdown(f"**{score.version} · {score.recommendation}**")
-    score_text = score.final_score if score.final_score is not None else "Unavailable / provisional"
+    # Preserve stored V4 aggregates and gates; supply presentation uses the approved /10 scale.
+    divisor, scale = (10, 10) if score.version == "supply-v4" else (1, 100)
+    score_text = (
+        f"{score.final_score / divisor:g}"
+        if score.final_score is not None
+        else "Unavailable / provisional"
+    )
+    raw_text = f"{score.raw_total / divisor:g}" if score.raw_total is not None else "Unavailable"
     st.write(
-        f"Score: {score_text}"
+        f"Score: {score_text} / {scale}"
         f" · Evidence coverage {score.coverage:g}% · Confidence {score.confidence}"
     )
     st.caption(
-        f"Raw total {score.raw_total if score.raw_total is not None else 'Unavailable'} "
+        f"Raw total {raw_text} / {scale} "
         f"× confidence factor {score.confidence_factor:g}; "
         f"financial revision {score.financial_revision}."
     )
@@ -96,7 +103,7 @@ def _score_view(score):
                 "Raw /10": d.raw_score,
                 "Availability": d.availability,
                 "Weight %": d.weight * 100,
-                "Contribution": d.contribution,
+                f"Contribution /{scale}": round(d.contribution / divisor, 4),
                 "Evidence IDs": ", ".join(d.evidence_ids),
                 "Explanation": d.reason,
             }
@@ -110,6 +117,39 @@ def _score_view(score):
             f"{risk.code}: {risk.explanation} · "
             f"Evidence: {', '.join(risk.evidence_ids) or 'Unavailable'}"
         )
+
+
+def _stage_view(stage):
+    stage = normalize_limit_stage(stage)
+    status = stage["status"]
+    source = stage.get("limit_source")
+    if status == "BUDGET_EXHAUSTED":
+        status = (
+            "Local action time budget exhausted"
+            if source == "LOCAL_TIME_BUDGET"
+            else "Local request budget exhausted"
+            if source == "LOCAL_REQUEST_BUDGET"
+            else "Local action budget exhausted"
+        )
+    elif status == "RATE_LIMITED":
+        status = (
+            "Provider rate/quota limited"
+            if source in {"PROVIDER_RATE_LIMIT", "PROVIDER_QUOTA_LIMIT"}
+            else "Rate limited (origin unavailable)"
+        )
+    st.write(
+        f"{stage['component']}: {status}"
+        + (" · historical evidence retained" if stage.get("retained") else "")
+        + (" · pending" if stage.get("pending") else "")
+    )
+    if stage.get("notice"):
+        st.caption(stage["notice"])
+
+
+def _telemetry_view(action):
+    payload = action.model_dump(mode="json")
+    payload["stages"] = [normalize_limit_stage(stage) for stage in payload["stages"]]
+    st.json(payload)
 
 
 def _financial(product, repo, extension, service, destination):
@@ -314,13 +354,7 @@ def render_supplier_intelligence(product, repo):
             "· Observations retain original collection times."
         )
         for stage in report.stages:
-            st.write(
-                f"{stage['component']}: {stage['status']}"
-                + (" · historical evidence retained" if stage.get("retained") else "")
-                + (" · pending" if stage.get("pending") else "")
-            )
-            if stage.get("notice"):
-                st.caption(stage["notice"])
+            _stage_view(stage)
         if report.destination != destination:
             st.warning(
                 "Supplier observations were collected for different target settings. "
@@ -457,10 +491,10 @@ def render_supplier_intelligence(product, repo):
     with st.expander("V4 request telemetry · latest explicit action"):
         if report:
             st.caption("Latest supplier action: actual dispatched attempts, caches and outcomes.")
-            st.json(report.telemetry.model_dump(mode="json"))
+            _telemetry_view(report.telemetry)
         action = extension.get_latest_action(product.id)
         if action:
-            st.json(action.model_dump(mode="json"))
+            _telemetry_view(action)
         else:
             st.write(
                 "No V4 requests. Navigation, selection, shortlist and economics saves "

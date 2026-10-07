@@ -34,8 +34,13 @@ Sources: [auth](https://developers.cjdropshipping.com/en/api/api2/api/auth.html)
 Auth docs currently say180-day lifetime and24h server token reuse; use actual
 returned expiries, not hardcoded validity. Conservative1request/sec covers Free
 tiers, with account/IP constraints; point quota exhaustion is RATE_LIMITED.
-HTTP429 and1600200/1600201/16900500 are rate/quota outcomes. Auth errors
-1600001..1600008 are sanitized. Retry only documented busy1600000/timeout1600301
+HTTP429 and1600200/1600201/16900500 are rate/quota outcomes. These
+are distinct from local BUDGET_EXHAUSTED stops: no dispatch after the request cap
+or action deadline. limit_source identifies LOCAL_REQUEST_BUDGET, LOCAL_TIME_BUDGET,
+PROVIDER_RATE_LIMIT or PROVIDER_QUOTA_LIMIT. An actual HTTP429 stays RATE_LIMITED
+when retry_blocked_by records a local budget constraint. Historical ambiguous
+budget notices can identify only LOCAL_ACTION_BUDGET; unknown origins stay unknown.
+Auth errors1600001..1600008 are sanitized. Retry only documented busy1600000/timeout1600301
 or transient HTTP failures, at mostonce inside budgets, respecting Retry-After.
 [Limits](https://developers.cjdropshipping.com/en/api/start/limit.html),
 [error codes](https://developers.cjdropshipping.com/en/api/api2/standard/ps-code.html).

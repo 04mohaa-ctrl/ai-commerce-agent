@@ -20,7 +20,7 @@ from weakref import WeakValueDictionary
 
 import httpx
 
-from src.supply.models import ActionTelemetry
+from src.supply.models import ActionTelemetry, LimitSource, LocalLimit
 
 
 class CJOperation(StrEnum):
@@ -78,6 +78,8 @@ class CJTransportOutcome:
     notice: str = ""
     observed_at: datetime = field(default_factory=lambda: datetime.now(UTC))
     code: int | None = None
+    limit_source: LimitSource | None = None
+    retry_blocked_by: LocalLimit | None = None
     retryable: bool = field(default=False, repr=False)
     retry_after: float = field(default=0.0, repr=False)
 
@@ -294,7 +296,24 @@ class CJResearchTransport:
         if result.retryable and retry[0]:
             wait = max(1.0, result.retry_after)
             if self._dispatches >= self._max_requests or self._monotonic() + wait >= self._deadline:
-                return self._outcome("RATE_LIMITED", "CJ retry exceeds the action research budget.")
+                source = (
+                    "LOCAL_REQUEST_BUDGET"
+                    if self._dispatches >= self._max_requests
+                    else "LOCAL_TIME_BUDGET"
+                )
+                if result.status == "RATE_LIMITED":
+                    return self._outcome(
+                        "RATE_LIMITED",
+                        result.notice + " Local action budget prevents a retry.",
+                        code=result.code,
+                        limit_source=result.limit_source,
+                        retry_blocked_by=source,
+                    )
+                return self._outcome(
+                    "BUDGET_EXHAUSTED",
+                    "Local CJ action budget prevents a retry. " + result.notice,
+                    limit_source=source,
+                )
             self._sleeper(wait)
             retry[0] -= 1
             self.telemetry.retries += 1
@@ -322,8 +341,18 @@ class CJResearchTransport:
 
     def _dispatch(self, operation: str, params: dict) -> CJTransportOutcome:
         remaining = self._deadline - self._monotonic()
-        if self._dispatches >= self._max_requests or remaining <= 0:
-            return self._outcome("RATE_LIMITED", "CJ action research budget exhausted.")
+        if self._dispatches >= self._max_requests:
+            return self._outcome(
+                "BUDGET_EXHAUSTED",
+                "Local CJ request budget exhausted; no request dispatched.",
+                limit_source="LOCAL_REQUEST_BUDGET",
+            )
+        if remaining <= 0:
+            return self._outcome(
+                "BUDGET_EXHAUSTED",
+                "Local CJ action time budget exhausted; no request dispatched.",
+                limit_source="LOCAL_TIME_BUDGET",
+            )
         spacing = (
             max(0.0, 1.0 - (self._monotonic() - self._state.last_dispatch))
             if self._state.last_dispatch is not None
@@ -331,12 +360,21 @@ class CJResearchTransport:
         )
         wait = max(spacing, self._state.next_allowed - self._monotonic())
         if wait >= remaining:
-            return self._outcome("RATE_LIMITED", "CJ action deadline reached before dispatch.")
+            return self._outcome(
+                "BUDGET_EXHAUSTED",
+                "Local CJ action time budget cannot accommodate spacing or cooldown; "
+                "no request dispatched.",
+                limit_source="LOCAL_TIME_BUDGET",
+            )
         if wait:
             self._sleeper(wait)
         remaining = self._deadline - self._monotonic()
         if remaining <= 0:
-            return self._outcome("RATE_LIMITED", "CJ action research budget exhausted.")
+            return self._outcome(
+                "BUDGET_EXHAUSTED",
+                "Local CJ action time budget exhausted; no request dispatched.",
+                limit_source="LOCAL_TIME_BUDGET",
+            )
         method, route = _ROUTES[operation]
         url = _HOST + _ROOT + route
         headers = {"Accept": "application/json"}
@@ -364,6 +402,7 @@ class CJResearchTransport:
                             "CJ rate limit reached.",
                             retryable=True,
                             retry_after=delay,
+                            limit_source="PROVIDER_RATE_LIMIT",
                         )
                     if status < 200 or status >= 300:
                         retryable = 500 <= status <= 599
@@ -385,7 +424,11 @@ class CJResearchTransport:
                             return self._outcome("FAILED", "CJ response exceeds the size limit.")
                         content.extend(chunk)
                         if self._monotonic() >= self._deadline:
-                            return self._outcome("RATE_LIMITED", "CJ action deadline reached.")
+                            return self._outcome(
+                                "BUDGET_EXHAUSTED",
+                                "Local CJ action time budget exhausted while reading the response.",
+                                limit_source="LOCAL_TIME_BUDGET",
+                            )
                     envelope = json.loads(content)
         except (httpx.TimeoutException, httpx.TransportError):
             return self._outcome("FAILED", "CJ transport request failed.", retryable=True)
@@ -399,7 +442,12 @@ class CJResearchTransport:
         if code == 200 and success and not contradictory:
             return self._outcome("SUCCESS", data=envelope.get("data"), code=code)
         if code in _RATE_CODES:
-            return self._outcome("RATE_LIMITED", f"CJ rate or quota limit ({code}).", code=code)
+            return self._outcome(
+                "RATE_LIMITED",
+                f"CJ rate or quota limit ({code}).",
+                code=code,
+                limit_source="PROVIDER_QUOTA_LIMIT",
+            )
         return self._outcome(
             "FAILED",
             f"CJ request failed (code {code}).",

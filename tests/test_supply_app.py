@@ -1,8 +1,126 @@
 from pathlib import Path
 
+import pytest
 from streamlit.testing.v1 import AppTest
 
 APP = Path(__file__).resolve().parents[1] / "app.py"
+
+
+def test_supply_display_scale_matches_raw_dimensions_without_changing_stored_score():
+    def view():
+        from src.supply.models import Destination, SupplierMatch, SupplierOffer, SupplierSelection
+        from src.supply.scoring import score_supply
+        from src.ui.supplier_intelligence import _score_view
+        from tests.test_supply_economics import NOW, selection
+        from tests.test_supply_scoring import finance
+
+        original = selection()
+        chosen = SupplierSelection(
+            offer=SupplierOffer(
+                candidate=original.offer.candidate,
+                variant=original.offer.variant,
+                stock=original.offer.stock,
+                quote=original.offer.quote,
+                match=SupplierMatch(outcome="LIKELY_MATCH"),
+            ),
+            confirmed_attributes=dict(original.offer.variant.attributes),
+            selected_at=NOW,
+        )
+        score = score_supply(
+            chosen, Destination(quantity=2), finance(import_duty_per_unit=None), [], now=NOW
+        )
+        before = score.model_dump_json()
+        _score_view(score)
+        assert score.final_score == 77.5
+        assert score.model_dump_json() == before
+
+    app = AppTest.from_function(view, default_timeout=30).run()
+    assert not app.exception
+    assert any("Score: 7.75 / 10" in m.value and "coverage 85%" in m.value for m in app.markdown)
+    assert any("Raw total 7.75 / 10" in c.value for c in app.caption)
+    table = app.dataframe[0].value
+    assert table.loc[0, "Raw /10"] == 7
+    assert table.loc[0, "Contribution /10"] == 1.75
+    assert table["Contribution /10"].sum() == 7.75
+
+
+def test_market_display_labels_its_distinct_hundred_point_scale():
+    def view():
+        from src.supply.models import Destination
+        from src.supply.scoring import score_opportunity
+        from src.ui.supplier_intelligence import _score_view
+        from tests.test_supply_economics import NOW, selection
+        from tests.test_supply_scoring import finance, market
+
+        _score_view(
+            score_opportunity(
+                market(), selection(), Destination(quantity=2), finance(), [], now=NOW
+            )
+        )
+
+    app = AppTest.from_function(view, default_timeout=30).run()
+    assert not app.exception
+    assert any("Score:" in m.value and " / 100" in m.value for m in app.markdown)
+    assert "Contribution /100" in app.dataframe[0].value.columns
+
+
+@pytest.mark.parametrize(
+    "notice,label,source",
+    [
+        (
+            "CJ action research budget exhausted.",
+            "Local action budget exhausted",
+            "LOCAL_ACTION_BUDGET",
+        ),
+        ("CJ rate limit reached.", "Provider rate/quota limited", "PROVIDER_RATE_LIMIT"),
+        ("Historical limit without origin", "Rate limited (origin unavailable)", None),
+    ],
+)
+def test_historical_limit_status_and_telemetry_are_distinguished_without_db_writes(
+    tmp_path, monkeypatch, product, notice, label, source
+):
+    import json
+
+    from src.agents.product_research_agent import ProductResearchAgent
+    from src.database.database import ProductRepository
+    from src.database.supply_repository import SupplyRepository
+    from src.supply.models import Destination, ProviderOutcome
+    from src.supply.service import SupplierIntelligenceService
+    from tests.test_supply_pipeline import FixtureSupplier
+
+    path = tmp_path / "limits-ui.db"
+    monkeypatch.setenv("DATABASE_PATH", str(path))
+    monkeypatch.setenv("OPENAI_API_KEY", "")
+    repo = ProductRepository(path)
+    repo.save(ProductResearchAgent(force_demo=True).analyze(product))
+    extension = SupplyRepository(repo, backup_dir=tmp_path / "backup")
+    provider = FixtureSupplier(product)
+    provider.name = "cj"
+    provider.search = lambda query, **kwargs: ProviderOutcome(status="RATE_LIMITED", notice=notice)
+    report = SupplierIntelligenceService(extension, provider).research(product, Destination())
+    # Preserve an actual pre-fix payload, without a limit_source field.
+    for stage in report.stages + report.telemetry.stages:
+        if stage["component"] == "search":
+            stage["status"] = "RATE_LIMITED"
+            stage.pop("limit_source", None)
+    extension.save_report(report)
+    before = extension.get_report(product.id).model_dump_json()
+    before_action = extension.get_latest_action(product.id).model_dump_json()
+    monkeypatch.setattr("src.supply.service.CJDropShippingProvider", lambda: provider)
+    app = AppTest.from_file(str(APP), default_timeout=30).run()
+    app.sidebar.radio("nav").set_value("Saved Products").run()
+    assert not app.exception
+    assert any(label in m.value for m in app.markdown)
+    shown = [json.loads(item.value) for item in app.json]
+    stages = [s for item in shown for s in item.get("stages", []) if s.get("component") == "search"]
+    assert stages and all(s.get("limit_source") == source for s in stages)
+    if source == "LOCAL_ACTION_BUDGET":
+        assert all(s["status"] == "BUDGET_EXHAUSTED" for s in stages)
+    else:
+        assert all(s["status"] == "RATE_LIMITED" for s in stages)
+    assert extension.get_report(product.id).model_dump_json() == before
+    assert extension.get_latest_action(product.id).model_dump_json() == before_action
+    assert provider.calls == []
 
 
 def button(app, label):
