@@ -14,3 +14,10 @@ data/*.sqlite*
 .superpowers/
 artifacts/
 *.log
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+*.sqlite-wal
+*.sqlite-shm
+backups/

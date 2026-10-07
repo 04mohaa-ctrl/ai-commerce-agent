@@ -46,7 +46,7 @@ class MarketIntelligenceRepository:
     def enable(self) -> None:
         with self.repository._connection() as conn:
             version = conn.execute("PRAGMA user_version").fetchone()[0]
-        if version == 3:
+        if version in {3, 4}:
             return
         if version > 3:
             raise DataStoreError("This database needs a newer app version.")

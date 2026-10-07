@@ -9,6 +9,7 @@ from src.database.database import ProductRepository
 from src.schemas.product import Product, ScoreHints
 from src.services.product_service import ResearchService
 from src.ui.research_details import run_product_research
+from src.ui.supplier_intelligence import render_target_inputs
 
 
 def render_research(repo: ProductRepository, settings: Settings) -> None:
@@ -24,6 +25,7 @@ def render_research(repo: ProductRepository, settings: Settings) -> None:
             key="research_query",
             max_chars=200,
         )
+        render_target_inputs()
         submit = st.form_submit_button("Find / Analyze Products", type="primary")
     agent = ProductResearchAgent(
         api_key=settings.api_key, model=settings.model, force_demo=st.session_state["use_demo"]

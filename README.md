@@ -1,5 +1,36 @@
 # AI Commerce Agent
 
+## V4 real demand and supplier intelligence
+
+V4 adds **Supplier Intelligence** in Product Details to the existing research flow.
+Declare the customer country and quantity before research. Optional read-only CJ
+catalog, variant, warehouse stock and freight observations support explicit offer
+selection and a local Preferred/Backup shortlist. Nothing purchases or publishes.
+
+Supplier refresh does not replace a selection or its adopted costs. Review and
+select updated observations explicitly, then **Apply observed supplier cost** or
+**Apply current shipping quote** in the separate V4 economics form. Unknown costs
+stay blank; enter zero explicitly. Currency conversion is unsupported. Original
+V1/V2/V3 saved products, economics and `market-v3` score meanings are preserved.
+
+Only Research product, Refresh supplier data, Refresh shipping and Refresh demand
+can call providers. Navigation and local saves make no requests. Demo Mode disables
+all external providers. CJ and DataForSEO can run independently of the OpenAI key.
+Set `CJ_API_KEY`, or both `DATAFORSEO_LOGIN` and `DATAFORSEO_PASSWORD`, privately in
+the app process environment. They are optional and never entered in the UI or DB.
+OpenAI retains the existing local `.env` setup. No new dependencies are required.
+
+DataForSEO Trends measures **relative search-interest / popularity**, not monthly
+search volume or sales. Current country mappings support US, GB, SE, DE and FR.
+Page support verifies attribution to the publisher, not independent truth.
+
+The first explicit V4 write verifies an ignored SQLite backup at schema 3 before
+transactionally activating schema 4. Merely opening an old product does not migrate.
+Untouched V3 cannot read schema 4; rollback uses the matching pre-V4 backup and must
+preserve both databases. See [V4 design and usage](docs/v4-real-demand-supplier.md),
+[provider contracts](docs/v4-provider-contracts.md), [implementation plan](docs/v4-implementation-plan.md)
+and [verification](docs/verification-v4.md) for formulas, gates, setup and limitations.
+
 ## V3 market intelligence
 
 V3 extends the same research action with bounded page support, optional native
@@ -12,8 +43,9 @@ See [V3 architecture and usage](docs/v3-market-intelligence.md) and
 without both process-environment credentials; unavailable measured data never
 blocks the app. Page support confirms publisher attribution, not objective truth.
 
-**Current development: V2 — evidence-backed product research.** The stable V1
-checkpoint is tagged `v1.0.0`; V2 extends it on `feat/evidence-backed-research`.
+**Current development: V4 — real demand and supplier intelligence**, on
+`feat/real-demand-supplier-v4`. Stable releases remain tagged `v1.0.0`, `v2.0.0`
+and `v3.0.0`.
 All original demo, manual-product and saved-product flows remain supported.
 
 V2 adds **Research**, **Sources** and **Economics** tabs in Product Details,
