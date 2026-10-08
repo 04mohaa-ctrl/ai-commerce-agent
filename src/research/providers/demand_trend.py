@@ -67,6 +67,25 @@ class DemandResult(BaseModel):
     status: Literal["completed", "unavailable", "failed"]
     notice: str = ""
     collected_at: datetime = Field(default_factory=utc_now)
+    failure_kind: (
+        Literal[
+            "CONFIGURATION",
+            "HTTP_REJECTION",
+            "PROVIDER_REJECTION",
+            "TIMEOUT",
+            "TRANSPORT",
+            "INVALID_RESPONSE",
+            "UNKNOWN",
+        ]
+        | None
+    ) = None
+    http_status: int | None = None
+    provider_status: int | None = None
+
+
+class DemandProviderRejection(ValueError):
+    def __init__(self, code):
+        self.code = code if isinstance(code, int) and not isinstance(code, bool) else None
 
 
 class DemandTrendProvider(Protocol):
@@ -122,7 +141,12 @@ class DataForSEOTrendProvider:
             provider=self.name, query=product.name, location=self.location, collected_at=now
         )
         if not self.enabled:
-            return DemandResult(**base, status="unavailable", notice=UNAVAILABLE_NOTICE)
+            return DemandResult(
+                **base,
+                status="unavailable",
+                notice=UNAVAILABLE_NOTICE,
+                failure_kind="CONFIGURATION",
+            )
         end = now.date() - timedelta(days=1)
         try:
             start = now.date().replace(year=now.year - 1)
@@ -143,11 +167,43 @@ class DataForSEOTrendProvider:
                 response = client.post(ENDPOINT, json=[request], auth=(self._login, self._password))
                 response.raise_for_status()
                 observations = self._parse(response.json(), request, now, start, end)
-        except (httpx.HTTPError, ValueError, TypeError, KeyError, IndexError):
+        except httpx.TimeoutException:
             return DemandResult(
                 **base,
                 status="failed",
-                notice="Measured demand request failed; check provider access.",
+                failure_kind="TIMEOUT",
+                notice="Demand timed out after 20 seconds. Retry demand only when ready.",
+            )
+        except httpx.HTTPStatusError as error:
+            code = error.response.status_code
+            return DemandResult(
+                **base,
+                status="failed",
+                failure_kind="HTTP_REJECTION",
+                http_status=code,
+                notice=f"Demand HTTP {code}. Check account access, credentials or quota.",
+            )
+        except DemandProviderRejection as error:
+            return DemandResult(
+                **base,
+                status="failed",
+                failure_kind="PROVIDER_REJECTION",
+                provider_status=error.code,
+                notice=f"Demand task rejected ({error.code}). Check task access/account limits.",
+            )
+        except httpx.HTTPError:
+            return DemandResult(
+                **base,
+                status="failed",
+                failure_kind="TRANSPORT",
+                notice="Demand connection failed. Check connectivity and retry demand only.",
+            )
+        except (ValueError, TypeError, KeyError, IndexError):
+            return DemandResult(
+                **base,
+                status="failed",
+                failure_kind="INVALID_RESPONSE",
+                notice="Demand failed query/country/date validation. No measurement adopted.",
             )
         return DemandResult(
             **base,
@@ -160,14 +216,16 @@ class DataForSEOTrendProvider:
         )
 
     def _parse(self, payload, request, now, start, end):
-        if not isinstance(payload, dict) or payload.get("status_code") != 20000:
+        if not isinstance(payload, dict):
             raise ValueError("Invalid provider status")
+        if payload.get("status_code") != 20000:
+            raise DemandProviderRejection(payload.get("status_code"))
         tasks = payload.get("tasks")
         if not isinstance(tasks, list) or len(tasks) != 1 or not isinstance(tasks[0], dict):
             raise ValueError("Invalid task")
         task = tasks[0]
         if task.get("status_code") != 20000:
-            raise ValueError("Task failed")
+            raise DemandProviderRejection(task.get("status_code"))
         data = task.get("data", {})
         if not isinstance(data, dict) or any(data.get(k) != v for k, v in request.items()):
             raise ValueError("Task inputs mismatch")

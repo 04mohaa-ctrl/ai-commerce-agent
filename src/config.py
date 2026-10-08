@@ -9,6 +9,18 @@ from dotenv import dotenv_values
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 
+def configure_provider_environment(env_path: Path | None = None) -> None:
+    """Startup only: make optional dotenv credentials available to provider adapters.
+
+    Existing values, including explicitly empty values, always take precedence.
+    Do not load unrelated dotenv variables or emit credentials.
+    """
+    values = dotenv_values(env_path or PROJECT_ROOT / ".env")
+    for name in ("CJ_API_KEY", "DATAFORSEO_LOGIN", "DATAFORSEO_PASSWORD"):
+        if name not in os.environ and values.get(name) is not None:
+            os.environ[name] = values[name]
+
+
 @dataclass(frozen=True)
 class Settings:
     api_key: str = field(default="", repr=False)

@@ -225,8 +225,22 @@ def destination_issue(
 
 def candidate_viable(product: Product, candidate: SupplierProductCandidate) -> bool:
     """Reject unrelated catalog names locally before spending enrichment requests."""
+    if _phone_mount_conflict(product.name, candidate.name):
+        return False
     identity = product.model_copy(update={"name": _identity_name(product.name), "description": ""})
     return match_product(identity, _identity_name(candidate.name)).outcome != "NO_MATCH"
+
+
+def _phone_mount_conflict(target, listing):
+    """A phone attached to a laptop is not a support stand for the laptop itself."""
+    target, listing = normalized_name(target), normalized_name(listing)
+    phone_mount = r"\blaptop (?:cellphone|phone) holder\b|\b(?:side|monitor) mount\b"
+    return bool(
+        re.search(r"\blaptop stand\b", target)
+        and not re.search(phone_mount, target)
+        and re.search(r"\b(?:phone|cellphone)\b", listing)
+        and re.search(phone_mount, listing)
+    )
 
 
 def match_supplier(
@@ -234,6 +248,8 @@ def match_supplier(
     candidate: SupplierProductCandidate,
     variant: SupplierVariant,
     destination: Destination,
+    *,
+    requirements=None,
 ) -> SupplierMatch:
     """Compare names through V3, then require compatible observed variant facts."""
     if (candidate.provider, candidate.product_id) != (variant.provider, variant.product_id):
@@ -242,7 +258,16 @@ def match_supplier(
             contradictions=["Supplier product identity conflict."],
             reasons=["Different product observations."],
         )
-    wanted = _details(product.name + "\n" + product.description)
+    if any(_phone_mount_conflict(product.name, name) for name in (candidate.name, variant.name)):
+        return SupplierMatch(
+            outcome="NO_MATCH",
+            reasons=["Supplier accessory supports a phone beside a laptop."],
+            contradictions=["A laptop phone side-mount holder is not a laptop support stand."],
+        )
+    wanted = _details(
+        product.name + "\n" + product.description,
+        requirements.attributes if requirements else {},
+    )
     found = _details(candidate.name + "\n" + variant.name, variant.attributes)
     usb_charging = _usb_charging_only(
         candidate.name + "\n" + variant.name, found, variant.attributes
@@ -318,9 +343,21 @@ def match_supplier(
             missing_attributes=sorted(set(missing)),
         )
     if missing or "AMBIGUOUS" in {candidate_match.outcome, variant_match.outcome}:
+        target_gaps = sorted(field for field in set(missing) if not wanted.get(field))
+        supplier_gaps = sorted(field for field in set(missing) if not found.get(field))
         return SupplierMatch(
             outcome="AMBIGUOUS",
-            reasons=["Missing comparable decisive attributes require further evidence."],
+            reasons=["Missing comparable decisive attributes require further evidence."]
+            + (
+                ["Target preference unspecified: " + ", ".join(target_gaps) + "."]
+                if target_gaps
+                else []
+            )
+            + (
+                ["Supplier evidence missing: " + ", ".join(supplier_gaps) + "."]
+                if supplier_gaps
+                else []
+            ),
             missing_attributes=sorted(set(missing)),
         )
     if candidate_match.outcome == variant_match.outcome == "MATCH":

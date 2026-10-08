@@ -282,15 +282,40 @@ def test_multiple_methods_and_warehouses_have_distinct_widgets(tmp_path, monkeyp
             }
         ),
     ]
+    report.stages = [s for s in report.stages if s.get("component") != "shipping"] + [
+        {
+            "component": "shipping",
+            "provider": provider.name,
+            "status": "SUCCESS",
+            "shipping_state": "SUCCESS",
+            "warehouse_id": "area1",
+            "storage_id": "sub1",
+        }
+    ]
     extension.save_report(report)
     monkeypatch.setattr("src.supply.service.CJDropShippingProvider", lambda: provider)
     calls = list(provider.calls)
     app = AppTest.from_file(str(APP), default_timeout=30).run()
     app.sidebar.radio("nav").set_value("Saved Products").run()
     selects = [b for b in app.button if b.label == "Select this offer"]
-    assert len(selects) == 3 and len({b.key for b in selects}) == 3
+    # One card per exact variant/stock snapshot; freight methods stay in their own chooser.
+    assert len(selects) == 2 and len({b.key for b in selects}) == 2
     assert not app.exception
-    selects[2].click().run()
-    assert not app.exception
+    selects[0].click().run()
+    method = next(s for s in app.selectbox if s.label == "Shipping method for selected variant")
+    assert len(method.options) == 2
+    express = report.offers[1]
+    method.set_value(express.id).run()
+    button(app, "Select shipping quote").click().run()
+    assert extension.get_selection(product.id).offer.quote.method == "Express"
+    reopened = AppTest.from_file(str(APP), default_timeout=30).run()
+    reopened.sidebar.radio("nav").set_value("Saved Products").run()
+    method = next(
+        s for s in reopened.selectbox if s.label == "Shipping method for selected variant"
+    )
+    assert method.value == express.id
+    selects = [b for b in reopened.button if b.label == "Select this offer"]
+    selects[1].click().run()
+    assert not reopened.exception
     assert extension.get_selection(product.id).offer.stock.storage_id == "sub2"
     assert provider.calls == calls

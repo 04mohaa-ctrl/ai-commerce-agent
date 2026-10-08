@@ -1,0 +1,341 @@
+{
+  "product": {
+    "name": "Foldable Laptop Stand",
+    "category": "Office",
+    "cost": 8.9,
+    "selling_price": 32.99,
+    "description": "Adjustable aluminum stand for laptops in a compact desk setup. Load and stability need testing.",
+    "tags": [
+      "office",
+      "desk",
+      "laptop",
+      "remote work"
+    ],
+    "source": "demo",
+    "hints": {
+      "demand": 7.8,
+      "competition": 8.0,
+      "trend": 6.5,
+      "marketing": 7.6
+    },
+    "evidence": []
+  },
+  "destination": {
+    "country": "SE",
+    "max_delivery_days": 14,
+    "postal_code": "",
+    "quantity": 1,
+    "region": ""
+  },
+  "offers": [
+    {
+      "candidate": {
+        "brand": null,
+        "category": "Consumer Electronics / Accessories & Parts / Home Electronic Accessories",
+        "id": "f49f9af316e872dad7b0ec4b26f8db5efd2bcf83c6568179e0189f1340f13d13",
+        "image_url": null,
+        "name": "Foldable laptop stand",
+        "observed_at": "2026-10-08T13:41:35.302150Z",
+        "product_id": "4C56FFFA-399B-4E05-98C6-092BB3A724A9",
+        "provider": "cj",
+        "source_url": null
+      },
+      "id": "3cd9f833b87b73f096f9808655d4a08041429ede84be502d2dac99faa2df9a17",
+      "match": {
+        "contradictions": [],
+        "missing_attributes": [
+          "color"
+        ],
+        "outcome": "AMBIGUOUS",
+        "reasons": [
+          "Missing comparable decisive attributes require further evidence."
+        ]
+      },
+      "quote": null,
+      "stock": {
+        "cj_quantity": 0,
+        "country": "CN",
+        "factory_quantity": 12829,
+        "id": "c99e4481228647a8e002fe4c5d78f59963be4e4d783e414b9313e44f2966e6e9",
+        "observed_at": "2026-10-08T13:41:37.620756Z",
+        "product_id": "4C56FFFA-399B-4E05-98C6-092BB3A724A9",
+        "provider": "cj",
+        "quantity": 12829,
+        "storage_id": "{6709CCD7-0DC7-43B1-B310-17AB499E9B0A}",
+        "variant_id": "1CC71DF3-9C07-43FD-9B78-074266306AD0",
+        "warehouse_id": "1"
+      },
+      "variant": {
+        "attributes": {
+          "variant_key": "Black"
+        },
+        "currency": "USD",
+        "dimensions_mm": [
+          "260",
+          "220",
+          "40"
+        ],
+        "id": "d082eccc0b7c4be7f74899be0754a15f98320c8de6e9a419436b15f4476bfce4",
+        "name": "Foldable laptop stand Black",
+        "observed_at": "2026-10-08T13:41:36.189668Z",
+        "product_id": "4C56FFFA-399B-4E05-98C6-092BB3A724A9",
+        "provider": "cj",
+        "sku": "CJXFLPJY00201-Black",
+        "unit_price": "3.1",
+        "variant_id": "1CC71DF3-9C07-43FD-9B78-074266306AD0",
+        "weight_g": "730.0"
+      }
+    },
+    {
+      "candidate": {
+        "brand": null,
+        "category": "Consumer Electronics / Accessories & Parts / Home Electronic Accessories",
+        "id": "f49f9af316e872dad7b0ec4b26f8db5efd2bcf83c6568179e0189f1340f13d13",
+        "image_url": null,
+        "name": "Foldable laptop stand",
+        "observed_at": "2026-10-08T13:41:35.302150Z",
+        "product_id": "4C56FFFA-399B-4E05-98C6-092BB3A724A9",
+        "provider": "cj",
+        "source_url": null
+      },
+      "id": "677377267944b30161062c190725f11edfc96122587f19f3b81f74e0919031f1",
+      "match": {
+        "contradictions": [],
+        "missing_attributes": [
+          "color"
+        ],
+        "outcome": "AMBIGUOUS",
+        "reasons": [
+          "Missing comparable decisive attributes require further evidence."
+        ]
+      },
+      "quote": null,
+      "stock": {
+        "cj_quantity": 0,
+        "country": "CN",
+        "factory_quantity": 10574,
+        "id": "ef48b67999b8af188b8652eab805102407563b1d4c31302104380c67233806b7",
+        "observed_at": "2026-10-08T13:41:38.553914Z",
+        "product_id": "4C56FFFA-399B-4E05-98C6-092BB3A724A9",
+        "provider": "cj",
+        "quantity": 10574,
+        "storage_id": "{6709CCD7-0DC7-43B1-B310-17AB499E9B0A}",
+        "variant_id": "2C613668-1462-4984-95BC-66860CD5DDD7",
+        "warehouse_id": "1"
+      },
+      "variant": {
+        "attributes": {
+          "variant_key": "Grey"
+        },
+        "currency": "USD",
+        "dimensions_mm": [
+          "260",
+          "220",
+          "40"
+        ],
+        "id": "c8dbed1027f62c9ba64528fd0dc495a0e4ec54d3798c84f0e336504ab5072dc4",
+        "name": "Foldable laptop stand Grey",
+        "observed_at": "2026-10-08T13:41:36.189668Z",
+        "product_id": "4C56FFFA-399B-4E05-98C6-092BB3A724A9",
+        "provider": "cj",
+        "sku": "CJXFLPJY00201-Grey",
+        "unit_price": "3.1",
+        "variant_id": "2C613668-1462-4984-95BC-66860CD5DDD7",
+        "weight_g": "730.0"
+      }
+    },
+    {
+      "candidate": {
+        "brand": null,
+        "category": "Phones & Accessories/Mobile Phone Accessories/Holders & Stands",
+        "id": "1ae98f597cd067c0b7fb33fe6047e5c833e2237614865a85086e9933a0bd9a4b",
+        "image_url": null,
+        "name": "Laptop Phone Holder, Adjustable Laptop Side Mount Clip, Magnetic Laptop Monitor Mount, Computer Laptop Cellphone Stand Foldable Aluminum Expansion Bracket Tablet Clip For Dual Screen",
+        "observed_at": "2026-10-08T13:41:43.290853Z",
+        "product_id": "1729723634354638848",
+        "provider": "cj",
+        "source_url": null
+      },
+      "id": "b5a6eca34942766e96adb49b543c93ad2e4065f13b430588c5e59897080ce098",
+      "match": {
+        "contradictions": [],
+        "missing_attributes": [
+          "color"
+        ],
+        "outcome": "AMBIGUOUS",
+        "reasons": [
+          "Missing comparable decisive attributes require further evidence."
+        ]
+      },
+      "quote": null,
+      "stock": {
+        "cj_quantity": 1143,
+        "country": "CN",
+        "factory_quantity": 0,
+        "id": "9bf1cc18dd22130e95ae406d9baccf1e3169070b047ce9c9c9ab41edf7d5782e",
+        "observed_at": "2026-10-08T13:41:45.638286Z",
+        "product_id": "1729723634354638848",
+        "provider": "cj",
+        "quantity": 1143,
+        "storage_id": "14461",
+        "variant_id": "1729723634413359104",
+        "warehouse_id": "1"
+      },
+      "variant": {
+        "attributes": {
+          "variant_key": "Black"
+        },
+        "currency": "USD",
+        "dimensions_mm": [
+          "120",
+          "95",
+          "30"
+        ],
+        "id": "841af50eda6620e56b64b31fe035103a29ece0d466519b079991b6371f0776c8",
+        "name": "Black",
+        "observed_at": "2026-10-08T13:41:44.307270Z",
+        "product_id": "1729723634354638848",
+        "provider": "cj",
+        "sku": "CJSJ190898001AZ",
+        "unit_price": "7.341",
+        "variant_id": "1729723634413359104",
+        "weight_g": "60.0"
+      }
+    }
+  ],
+  "stages": [
+    {
+      "cached": false,
+      "component": "search",
+      "notice": "",
+      "observed_at": "2026-10-08T13:41:33.820261+00:00",
+      "partial": false,
+      "provider": "cj",
+      "query": "Foldable Laptop Stand",
+      "rejected": 0,
+      "status": "SUCCESS"
+    },
+    {
+      "cached": false,
+      "component": "details",
+      "notice": "",
+      "observed_at": "2026-10-08T13:41:35.302150+00:00",
+      "partial": false,
+      "product_id": "4C56FFFA-399B-4E05-98C6-092BB3A724A9",
+      "provider": "cj",
+      "rejected": 0,
+      "status": "SUCCESS"
+    },
+    {
+      "cached": false,
+      "component": "variants",
+      "notice": "",
+      "observed_at": "2026-10-08T13:41:36.189668+00:00",
+      "partial": false,
+      "product_id": "4C56FFFA-399B-4E05-98C6-092BB3A724A9",
+      "provider": "cj",
+      "rejected": 0,
+      "status": "SUCCESS"
+    },
+    {
+      "cached": false,
+      "component": "stock",
+      "notice": "",
+      "observed_at": "2026-10-08T13:41:37.620756+00:00",
+      "partial": false,
+      "product_id": "4C56FFFA-399B-4E05-98C6-092BB3A724A9",
+      "provider": "cj",
+      "rejected": 0,
+      "status": "SUCCESS",
+      "variant_id": "1CC71DF3-9C07-43FD-9B78-074266306AD0"
+    },
+    {
+      "cached": false,
+      "component": "stock",
+      "notice": "",
+      "observed_at": "2026-10-08T13:41:38.553914+00:00",
+      "partial": false,
+      "product_id": "4C56FFFA-399B-4E05-98C6-092BB3A724A9",
+      "provider": "cj",
+      "rejected": 0,
+      "status": "SUCCESS",
+      "variant_id": "2C613668-1462-4984-95BC-66860CD5DDD7"
+    },
+    {
+      "cached": false,
+      "component": "details",
+      "notice": "",
+      "observed_at": "2026-10-08T13:41:39.950754+00:00",
+      "partial": false,
+      "product_id": "1959882763077206018",
+      "provider": "cj",
+      "rejected": 0,
+      "status": "SUCCESS"
+    },
+    {
+      "cached": false,
+      "component": "variants",
+      "notice": "",
+      "observed_at": "2026-10-08T13:41:40.895529+00:00",
+      "partial": false,
+      "product_id": "1959882763077206018",
+      "provider": "cj",
+      "rejected": 0,
+      "status": "SUCCESS"
+    },
+    {
+      "cached": false,
+      "component": "stock",
+      "notice": "",
+      "observed_at": "2026-10-08T13:41:41.881621+00:00",
+      "partial": false,
+      "product_id": "1959882763077206018",
+      "provider": "cj",
+      "rejected": 0,
+      "status": "SUCCESS",
+      "variant_id": "1959882763194646529"
+    },
+    {
+      "cached": false,
+      "component": "details",
+      "notice": "",
+      "observed_at": "2026-10-08T13:41:43.290853+00:00",
+      "partial": false,
+      "product_id": "1729723634354638848",
+      "provider": "cj",
+      "rejected": 0,
+      "status": "SUCCESS"
+    },
+    {
+      "cached": false,
+      "component": "variants",
+      "notice": "",
+      "observed_at": "2026-10-08T13:41:44.307270+00:00",
+      "partial": false,
+      "product_id": "1729723634354638848",
+      "provider": "cj",
+      "rejected": 0,
+      "status": "SUCCESS"
+    },
+    {
+      "cached": false,
+      "component": "stock",
+      "notice": "",
+      "observed_at": "2026-10-08T13:41:45.638286+00:00",
+      "partial": false,
+      "product_id": "1729723634354638848",
+      "provider": "cj",
+      "rejected": 0,
+      "status": "SUCCESS",
+      "variant_id": "1729723634413359104"
+    },
+    {
+      "component": "shipping",
+      "notice": "A current compatible selected variant and warehouse are required; Demo Mode makes no requests.",
+      "pending": true,
+      "provider": "cj",
+      "status": "UNAVAILABLE"
+    }
+  ],
+  "researched_at": "2026-10-08T13:41:30.695813Z"
+}

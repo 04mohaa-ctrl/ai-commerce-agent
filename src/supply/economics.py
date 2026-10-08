@@ -11,8 +11,8 @@ from src.services.landed_cost import LANDED_COST_FIELDS
 from src.services.market_economics import (
     MarketEconomicsInputs,
     MarketEconomicsResult,
-    calculate_market_economics,
 )
+from src.supply.financial_scenario import PriceConversion, TaxAssumptions, calculate_v4_economics
 from src.supply.matching import destination_issue
 
 
@@ -61,7 +61,7 @@ def _manual(field, value, currency):
         unit="percent"
         if field.endswith("percent")
         else "per_unit"
-        if field in LANDED_COST_FIELDS
+        if field in LANDED_COST_FIELDS or field == "selling_price"
         else "per_order",
         source_kind="ESTIMATED" if value is not None else "UNKNOWN",
         derivation="Explicit manual assumption" if value is not None else "Not supplied",
@@ -75,6 +75,8 @@ class FinancialSnapshot(BaseModel):
     provenance: dict[str, FinancialInputProvenance] = Field(default_factory=dict)
     revision: int = Field(default=1, ge=1)
     updated_at: datetime = Field(default_factory=utc_now)
+    tax_assumptions: TaxAssumptions = Field(default_factory=TaxAssumptions)
+    price_conversion: PriceConversion | None = None
 
     @field_validator("updated_at")
     @classmethod
@@ -86,11 +88,29 @@ class FinancialSnapshot(BaseModel):
     @model_validator(mode="after")
     def own_inputs(self):
         self.inputs = MarketEconomicsInputs.model_validate(self.inputs.model_dump())
+        self.tax_assumptions = TaxAssumptions.model_validate(self.tax_assumptions.model_dump())
+        if self.price_conversion:
+            self.price_conversion = PriceConversion.model_validate(
+                self.price_conversion.model_dump()
+            )
+            if (
+                self.currency != "USD"
+                or self.inputs.selling_price is None
+                or Decimal(str(self.inputs.selling_price)) != self.price_conversion.usd_price
+            ):
+                raise ValueError("Recorded FX conversion must agree with the USD selling price.")
         self.provenance = {k: v.model_copy(deep=True) for k, v in self.provenance.items()}
         if set(self.provenance) - set(MarketEconomicsInputs.model_fields):
             raise ValueError("Unknown financial provenance field.")
         for field, value in self.inputs.model_dump().items():
             self.provenance.setdefault(field, _manual(field, value, self.currency))
+            if field == "selling_price" and self.provenance[field].unit == "per_order":
+                self.provenance[field].unit = "per_unit"
+                self.provenance[
+                    field
+                ].derivation += (
+                    "; V4 per-unit selling price; legacy per_order metadata normalized on read"
+                )
             expected = Decimal(str(value)) if value is not None else None
             if self.provenance[field].value != expected:
                 raise ValueError("Financial input does not agree with provenance.")
@@ -98,7 +118,7 @@ class FinancialSnapshot(BaseModel):
                 "percent"
                 if field.endswith("_percent")
                 else "per_unit"
-                if field in LANDED_COST_FIELDS
+                if field in LANDED_COST_FIELDS or field == "selling_price"
                 else "per_order"
             )
             if self.provenance[field].unit != expected_unit:
@@ -110,6 +130,7 @@ class FinancialCalculation(BaseModel):
     revision: int
     currency: str
     economics: MarketEconomicsResult | None
+    landed_cost_per_order: float | None = None
     known_cost_subtotal: Decimal
     missing_inputs: list[str]
     compatible: bool
@@ -287,6 +308,8 @@ def _applied(snapshot, field, value, observation, derivation, now):
     )
     return FinancialSnapshot(
         inputs=MarketEconomicsInputs(**payload),
+        tax_assumptions=snapshot.tax_assumptions,
+        price_conversion=snapshot.price_conversion,
         currency=snapshot.currency,
         provenance=provenance,
         revision=snapshot.revision + 1,
@@ -325,11 +348,35 @@ def save_manual_inputs(snapshot, inputs):
             provenance[field] = _manual(field, value, snapshot.currency)
     return FinancialSnapshot(
         inputs=inputs,
+        tax_assumptions=snapshot.tax_assumptions,
+        price_conversion=snapshot.price_conversion
+        if inputs.selling_price == snapshot.inputs.selling_price
+        else None,
         currency=snapshot.currency,
         provenance=provenance,
         revision=snapshot.revision + 1,
         updated_at=utc_now(),
     )
+
+
+def save_tax_assumptions(snapshot, tax):
+    payload = snapshot.model_dump()
+    payload.update(
+        tax_assumptions=tax.model_dump(), revision=snapshot.revision + 1, updated_at=utc_now()
+    )
+    return FinancialSnapshot.model_validate(payload)
+
+
+def save_customer_price(snapshot, conversion):
+    inputs = snapshot.inputs.model_copy(update={"selling_price": float(conversion.usd_price)})
+    updated = save_manual_inputs(snapshot, inputs)
+    updated.price_conversion = conversion
+    updated.provenance["selling_price"].derivation = (
+        f"Explicit manual FX: {conversion.customer_price} {conversion.currency} × "
+        f"{conversion.usd_per_currency} USD/{conversion.currency}; "
+        f"rate date {conversion.rate_date}; source {conversion.source}"
+    )
+    return FinancialSnapshot.model_validate(updated.model_dump())
 
 
 def calculate_financial(snapshot, selection=None, destination=None, stages=(), now=None):
@@ -391,11 +438,42 @@ def calculate_financial(snapshot, selection=None, destination=None, stages=(), n
                         reasons.append(f"{field}: {issue}")
         if valid and field in LANDED_COST_FIELDS and value is not None:
             known += Decimal(str(value))
-    economics = calculate_market_economics(snapshot.inputs) if compatible and current else None
+    tax_cost = snapshot.tax_assumptions.unrecoverable_import_vat
+    if tax_cost is not None:
+        known += tax_cost
+    freight_source = snapshot.provenance["international_shipping_per_unit"]
+    exact_freight = (
+        selection.offer.quote.total_cost
+        if compatible
+        and current
+        and selection
+        and selection.offer.quote
+        and freight_source.source_kind in {"OBSERVED", "DERIVED"}
+        else None
+    )
+    computed = calculate_v4_economics(
+        snapshot.inputs,
+        snapshot.tax_assumptions,
+        destination.quantity if destination else 1,
+        adopted_freight_total=exact_freight,
+    )
+    missing = computed.missing_inputs
+    economics = computed if compatible and current else None
+    quantity = destination.quantity if destination else 1
+    order_landed = (
+        Decimal(str(economics.landed_cost)) * quantity
+        if (economics and economics.landed_cost is not None)
+        else None
+    )
+    if order_landed is not None and exact_freight is not None:
+        order_landed += (
+            exact_freight - Decimal(str(snapshot.inputs.international_shipping_per_unit)) * quantity
+        )
     return FinancialCalculation(
         revision=snapshot.revision,
         currency=snapshot.currency,
         economics=economics,
+        landed_cost_per_order=float(cents(order_landed)) if order_landed is not None else None,
         known_cost_subtotal=cents(known),
         missing_inputs=missing,
         compatible=compatible,

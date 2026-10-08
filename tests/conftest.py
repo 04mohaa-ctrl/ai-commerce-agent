@@ -33,6 +33,9 @@ def offline_market_boundaries(monkeypatch):
 
     monkeypatch.delenv("DATAFORSEO_LOGIN", raising=False)
     monkeypatch.delenv("DATAFORSEO_PASSWORD", raising=False)
+    # AppTest runs in this process: never let startup read the user's real credentials.
+    # Dedicated launch tests invoke the original loader with temporary dotenv files.
+    monkeypatch.setattr("src.config.configure_provider_environment", lambda: None)
     original = PageVerificationProvider.__init__
 
     def initialize(self, fetcher=None):

@@ -10,15 +10,52 @@ selection and a local Preferred/Backup shortlist. Nothing purchases or publishes
 Supplier refresh does not replace a selection or its adopted costs. Review and
 select updated observations explicitly, then **Apply observed supplier cost** or
 **Apply current shipping quote** in the separate V4 economics form. Unknown costs
-stay blank; enter zero explicitly. Currency conversion is unsupported. Original
+stay blank; enter zero explicitly. V4 can record a manual customer-price conversion
+to USD with an explicit rate, date and source; no FX provider is called. Original
 V1/V2/V3 saved products, economics and `market-v3` score meanings are preserved.
 
 Only Research product, Refresh supplier data, Refresh shipping and Refresh demand
 can call providers. Navigation and local saves make no requests. Demo Mode disables
 all external providers. CJ and DataForSEO can run independently of the OpenAI key.
 Set `CJ_API_KEY`, or both `DATAFORSEO_LOGIN` and `DATAFORSEO_PASSWORD`, privately in
-the app process environment. They are optional and never entered in the UI or DB.
-OpenAI retains the existing local `.env` setup. No new dependencies are required.
+`.env` or the process environment. Normal app startup loads missing optional provider
+variables from `.env`; existing environment values, including empty values, win.
+Credentials are never entered in the UI or DB. No new dependencies are required.
+
+Normal launch now configures the optional providers reliably (PowerShell, from the
+project directory, using a free port):
+
+```powershell
+.\.venv\Scripts\python.exe -m streamlit run app.py --server.address 127.0.0.1 --server.port 8502
+```
+
+Choose a free port; preserve existing servers. `app.py` loads only absent CJ and
+DataForSEO variables before rendering. The same applies to `scripts/start.ps1`.
+OpenAI settings retain their existing dotenv precedence. Startup makes no provider
+requests. The explicit dotenv wrapper remains available when you want to load the
+whole dotenv environment without overriding existing variables:
+
+```powershell
+.\.venv\Scripts\python.exe -m dotenv -f .env run --no-override -- .\.venv\Scripts\python.exe -m streamlit run app.py --server.address 127.0.0.1 --server.port 8502
+```
+
+In saved Product Details, **Supplier Intelligence** and **Data & assumptions** expose
+a structured **Required supplier color** field. **Save supplier requirements and
+recheck** updates product-scoped supplier preferences without editing the product
+description or calling providers. Unspecified color stays ambiguous; a color match
+cannot turn a phone side-mount accessory into a laptop support stand. Freight has
+an explicit **Shipping method for selected variant → Select shipping quote** step;
+product-cost and freight adoption remain separate. See
+[workflow completion and verification](docs/v4-workflow-completion.md).
+
+V4 economics now requires an explicit selling-price VAT basis and import-VAT
+assumptions. Unit costs scale with units per order; fixed payment fees, expected
+return losses and ads apply once per order. Payment percentages use the customer
+charge including output VAT; revenue excludes it. Adopted freight preserves the
+exact order total despite rounded unit display. Results list their missing inputs.
+**Saved Products → V4 comparison and evidence export** compares current V4 results
+and exports JSON with observations, unknowns, assumptions, provenance and score gates.
+See [daily-use readiness and acceptance](docs/v4-daily-readiness.md).
 
 DataForSEO Trends measures **relative search-interest / popularity**, not monthly
 search volume or sales. Current country mappings support US, GB, SE, DE and FR.
@@ -43,9 +80,9 @@ See [V3 architecture and usage](docs/v3-market-intelligence.md) and
 without both process-environment credentials; unavailable measured data never
 blocks the app. Page support confirms publisher attribution, not objective truth.
 
-**Current development: V4 — real demand and supplier intelligence**, on
-`feat/real-demand-supplier-v4`. Stable releases remain tagged `v1.0.0`, `v2.0.0`
-and `v3.0.0`.
+**Released baseline: V4**, `main` / `v4.0.0` at `b34e5fc7`.
+Focused uncommitted fixes are on `codex/v4-supplier-requirements-fix`.
+Earlier stable releases remain tagged `v1.0.0`, `v2.0.0` and `v3.0.0`.
 All original demo, manual-product and saved-product flows remain supported.
 
 V2 adds **Research**, **Sources** and **Economics** tabs in Product Details,

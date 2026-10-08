@@ -196,7 +196,9 @@ def render_sources_view(product: Product, repo: ProductRepository) -> None:
     st.markdown("**SOURCES · OBSERVED citation provenance**")
     st.caption(
         "URLs and access times come from web-search tool citations. Source-linked summaries "
-        "are AI interpretations; citation presence does not independently verify a market claim."
+        "are AI interpretations; citation presence does not independently verify a market claim. "
+        "Research links are not confirmed CJ offers and cannot be selected for freight or costs. "
+        "Use Supplier Intelligence for exact catalog variants and warehouses."
     )
     report = current_report(product, repo)
     if not report or not report.sources:

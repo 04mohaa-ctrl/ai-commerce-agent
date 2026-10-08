@@ -4,12 +4,17 @@ from types import SimpleNamespace
 import pytest
 
 from src.supply.economics import FinancialSnapshot
+from src.supply.financial_scenario import TaxAssumptions
 from src.supply.scoring import score_opportunity, score_supply
 from tests.test_supply_economics import NOW, complete_inputs, selection, updated_selection
 
 
 def finance(**changes):
-    return FinancialSnapshot(inputs=complete_inputs(**changes), updated_at=NOW)
+    return FinancialSnapshot(
+        inputs=complete_inputs(**changes),
+        updated_at=NOW,
+        tax_assumptions=TaxAssumptions(price_basis="NO_VAT", import_vat_per_unit=0),
+    )
 
 
 def market():
