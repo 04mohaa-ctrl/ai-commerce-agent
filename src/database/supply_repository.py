@@ -140,6 +140,16 @@ class SupplyRepository:
     def save_settings(self, product_id, destination):
         self._save("settings", product_id, product_id, destination)
 
+    def get_requirements(self, product_id):
+        from src.supply.models import SupplierRequirements
+
+        return self._model("settings", "requirements:" + product_id, SupplierRequirements) or (
+            SupplierRequirements()
+        )
+
+    def save_requirements(self, product_id, requirements):
+        self._save("settings", "requirements:" + product_id, product_id, requirements)
+
     def get_report(self, product_id):
         from src.supply.models import SupplyIntelligenceReport
 

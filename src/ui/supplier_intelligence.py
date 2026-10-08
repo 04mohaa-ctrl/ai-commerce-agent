@@ -24,6 +24,9 @@ from src.supply.models import Destination, SupplierSelection, normalize_limit_st
 from src.supply.scoring import score_opportunity, score_supply
 from src.supply.service import SupplierIntelligenceService
 from src.ui.market_economics import LABELS
+from src.ui.supplier_financial import FIELD_LABELS, HELP, blocked_results, render_tax_and_fx
+from src.ui.supplier_requirements import WORKFLOW_REVISION, render_supplier_requirements
+from src.ui.supplier_shipping import catalog_offers, render_shipping_flow
 
 COUNTRIES = {
     "US": "United States",
@@ -168,7 +171,9 @@ def _financial(product, repo, extension, service, destination):
     st.markdown("**V4 ECONOMICS · separate financial snapshot (USD)**")
     st.caption(
         "Initial inputs are copies of V3 assumptions. Observations apply only on your explicit "
-        "action. Blank is unknown; zero is an explicit estimate. No currency conversion."
+        "action. Blank is unknown; zero is an explicit estimate. Costs are USD per unit; "
+        "fixed payment fees, return loss, ads and profit are per order. "
+        "FX requires an explicit rate."
     )
     now = utc_now()
     cost_issue = supplier_cost_issue(selection, snapshot.currency, now, stages, destination)
@@ -221,12 +226,13 @@ def _financial(product, repo, extension, service, destination):
         values, columns = {}, st.columns(2)
         for i, (field, label) in enumerate(LABELS.items()):
             values[field] = columns[i % 2].number_input(
-                label.replace("V3", "V4"),
+                FIELD_LABELS.get(field, label).replace("V3", "V4"),
                 key=f"v4_econ_{product.id}_{field}",
                 value=None,
                 min_value=0.01 if field == "selling_price" else 0.0,
                 max_value=100.0 if field.endswith("_percent") else 1_000_000.0,
                 step=0.1 if field.endswith("_percent") else 0.5,
+                help=HELP.get(field),
             )
         save = st.form_submit_button("Save V4 economics assumptions")
     if save:
@@ -238,35 +244,52 @@ def _financial(product, repo, extension, service, destination):
             st.error("Use finite nonnegative costs, positive selling price and percentages 0–100.")
         else:
             st.rerun()
+    render_tax_and_fx(product, extension, snapshot, saved=stored_snapshot is not None)
     finance = calculate_financial(snapshot, selection, destination, stages)
     st.metric("Known compatible unit cost subtotal", f"USD {finance.known_cost_subtotal:.2f}")
     st.caption("A subtotal is not complete landed cost or profit.")
     result = finance.economics
+    st.caption(
+        f"Landed cost / order: USD {finance.landed_cost_per_order:.2f}"
+        if finance.landed_cost_per_order is not None
+        else "Landed cost / order: Unknown"
+    )
+    st.caption(
+        "Adopted freight keeps the exact quote total per order; the displayed unit "
+        "allocation is rounded and may not multiply back to that total."
+    )
     for col, (label, field) in zip(
         st.columns(3),
         [
-            ("V4 landed cost", "landed_cost"),
-            ("V4 net profit", "estimated_net_profit"),
-            ("V4 break-even CPA", "break_even_ad_cost"),
+            ("V4 landed cost / unit", "landed_cost"),
+            ("V4 net profit / order", "estimated_net_profit"),
+            ("V4 break-even CPA / order", "break_even_ad_cost"),
         ],
     ):
         value = getattr(result, field) if result else None
         col.metric(label, f"USD {value:.2f}" if value is not None else "Unknown")
-    if finance.missing_inputs or finance.reasons:
-        st.info(
-            "Unknown inputs: "
-            + ", ".join(finance.missing_inputs)
-            + ". "
-            + " ".join(finance.reasons)
-        )
+    st.caption(
+        f"Units per order: {destination.quantity}. Revenue excludes output VAT. "
+        "Net profit is estimated order contribution after ads, before overhead and income tax. "
+        "Break-even CPA is the maximum ad spend per order for zero contribution. "
+        "Separate customer delivery charges, special tax schemes and mixed-currency costs "
+        "are not represented; incorporate applicable costs explicitly before relying on a result."
+    )
+    for label, missing in blocked_results(finance.missing_inputs).items():
+        if missing:
+            st.info(f"{label} blocked by: " + "; ".join(missing))
+    for reason in finance.reasons:
+        st.warning("Current results blocked: " + reason)
     with st.expander("Financial provenance and calculations"):
         st.json(snapshot.model_dump(mode="json"))
         st.code(
-            "landed = unit + freight + duty + customs + packaging + handling + other\n"
-            "payment = price × fee% /100 + fixed fee\n"
+            "landed/unit = product + freight + duty + customs + packaging + handling "
+            "+ other + unrecoverable import VAT\n"
+            "revenue/order = price excluding output VAT × units\n"
+            "payment/order = customer charge including output VAT × units × fee% /100 + fixed fee\n"
             "returns = return rate% /100 × loss per return\n"
-            "net = price − landed − payment − returns − ads\n"
-            "break-even CPA = price − landed − payment − returns"
+            "net/order = revenue − landed/unit × units − payment − returns − ads\n"
+            "break-even CPA/order = revenue − landed/unit × units − payment − returns"
         )
     _score_view(score_supply(selection, destination, snapshot, stages))
     from src.supply.demand import current_market_overlay
@@ -287,6 +310,8 @@ def render_supplier_intelligence(product, repo):
         )
         report = None
     st.markdown("**SUPPLIER INTELLIGENCE · optional read-only CJ observations**")
+    st.caption(f"Workflow {WORKFLOW_REVISION} · Product ID {product.id}")
+    render_supplier_requirements(product, repo, destination, "offers")
     if not service.provider.configured:
         st.info("Live supplier data unavailable. CJ credentials are not configured.")
     else:
@@ -340,7 +365,10 @@ def render_supplier_intelligence(product, repo):
         with st.spinner("Refreshing bounded supplier observations…"):
             service.research(product, destination, force=True)
         st.rerun()
-    if actions[1].button("Refresh shipping", key=f"v4_shipping_{product.id}", disabled=demo):
+    shipping_block = service.shipping_request_issue(product, destination, demo=demo)
+    if actions[1].button(
+        "Refresh shipping", key=f"v4_shipping_{product.id}", disabled=bool(shipping_block)
+    ):
         service.refresh_shipping(product, destination)
         st.rerun()
     if actions[2].button("Refresh demand", key=f"v4_demand_{product.id}", disabled=demo):
@@ -374,14 +402,30 @@ def render_supplier_intelligence(product, repo):
             f"· selected {selected.selected_at.isoformat()}"
         )
         if report and not any(o.id == selected.offer.id for o in report.offers):
-            st.warning(
-                "Selected observation is historical. Review and select an updated offer "
-                "explicitly to adopt it; costs are preserved."
+            same_supplier = any(
+                o.candidate.id == selected.offer.candidate.id
+                and o.variant.id == selected.offer.variant.id
+                and (o.stock.id if o.stock else None)
+                == (selected.offer.stock.id if selected.offer.stock else None)
+                and o.match == selected.offer.match
+                for o in report.offers
             )
+            if same_supplier:
+                st.info(
+                    "Shipping changed for the selected variant. Choose a method below and "
+                    "Select shipping quote; product cost stays independent."
+                )
+            else:
+                st.warning(
+                    "Selected supplier observation is historical. Review and select an updated "
+                    "offer explicitly; adopted costs are preserved."
+                )
         if st.button("Clear supplier selection", key=f"v4_clear_{product.id}"):
             extension.save_selection(product.id, None)
             st.rerun()
-    for offer in report.offers if report else []:
+    for offer in catalog_offers(report.offers, selected) if report else []:
+        # Recheck even pre-fix classifications before offering a selection control.
+        offer = offer.model_copy(update={"match": service.match_offer(product, offer, destination)})
         key = f"v4_{product.id}_{offer.id}"
         with st.container(border=True):
             st.markdown(f"**{offer.candidate.name} · {offer.match.outcome}**")
@@ -454,9 +498,18 @@ def render_supplier_intelligence(product, repo):
                 if offer.match.outcome != "NO_MATCH"
                 else None
             )
-            eligible = selection is not None and selection_issue(selection, destination) is None
+            issue = (
+                selection_issue(selection, destination)
+                if selection
+                else "Supplier product identity is incompatible."
+            )
+            eligible = issue is None
+            st.caption(f"Selection: {issue or 'eligible; selecting does not adopt costs.'}")
             if st.button("Select this offer", key=key + "_select", disabled=not eligible):
                 extension.save_selection(product.id, selection)
+                # Persist the locally displayed classification before subsequent freight/adoption.
+                service.recheck_saved(product, destination)
+                st.session_state["supplier_focus_product"] = product.id
                 st.rerun()
             label = st.selectbox("Shortlist role", ["Preferred", "Backup"], key=key + "_label")
             notes = st.text_input("Local shortlist notes", key=key + "_notes", max_chars=1000)
@@ -464,14 +517,49 @@ def render_supplier_intelligence(product, repo):
                 extension.save_shortlist(product.id, offer, label, notes)
                 st.rerun()
     with st.expander("Local supplier shortlist"):
+        st.caption(
+            "Preferred/Backup are saved review notes and observation snapshots. "
+            "They do not select an offer, establish compatibility or adopt costs."
+        )
         for row in extension.get_shortlist(product.id):
             st.write(f"{row['label']} · {row['offer']['variant']['variant_id']} · {row['notes']}")
     from src.supply.demand import DemandIntelligenceService
+
+    render_shipping_flow(product, destination, extension, service, demo)
 
     demand = DemandIntelligenceService(extension).get_current(product, destination)
     st.markdown("**MEASURED DEMAND · relative search-interest / popularity**")
     if demand:
         st.write(demand.outcome.notice or "Measured demand data unavailable")
+        st.write(
+            f"Latest demand attempt: {demand.outcome.status} · "
+            f"{demand.outcome.observed_at.isoformat()}"
+        )
+        if demand.outcome.status == "FAILED":
+            st.caption(
+                f"Failure category: {demand.outcome.failure_kind or 'UNKNOWN HISTORICAL'} · "
+                f"HTTP status: {demand.outcome.http_status or 'not retained'} · "
+                f"Provider status: {demand.outcome.provider_status or 'not retained'} · "
+                f"Requests in latest action: {sum(demand.telemetry.requests.values())} · "
+                f"Cache hits: {', '.join(demand.telemetry.cache_hits) or 'none'}"
+            )
+            st.warning(
+                demand.outcome.notice + " "
+                "Older failures may lack HTTP/provider/timeout detail; cause cannot be inferred. "
+                "Resolve access, timeout or response issues before refreshing demand only. "
+                "No demand value or score is inferred from failure."
+            )
+        bins = demand.demand.observations
+        usable = sum(not o.missing and o.value is not None for o in bins)
+        st.caption(
+            f"Usable demand observations: {usable} / {len(bins)}. "
+            "Missing/zero index values are insufficient data, not zero demand."
+        )
+        if bins and usable < len(bins):
+            st.info(
+                "Sparse observations may be insufficient for trend scoring. "
+                "Evidence and coverage gates still apply."
+            )
         st.caption(
             f"Provider {demand.provider} · query {demand.query} · {demand.location} · "
             f"{demand.period_start}–{demand.period_end} · "

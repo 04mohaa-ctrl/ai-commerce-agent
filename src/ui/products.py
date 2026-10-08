@@ -8,10 +8,57 @@ from src.research.scoring import hydrate_results
 from src.schemas.product import ResearchResult
 from src.services.product_service import SORT_KEYS, filter_results
 from src.services.scoring import WEIGHTS
+from src.supply.service import SupplierIntelligenceService
 from src.ui.market_economics import render_market_economics
 from src.ui.market_intelligence import render_market_intelligence
 from src.ui.research_details import render_economics_view, render_research_view, render_sources_view
-from src.ui.supplier_intelligence import render_supplier_intelligence
+from src.ui.supplier_comparison import render_supplier_comparison
+from src.ui.supplier_intelligence import render_supplier_intelligence, research_destination
+from src.ui.supplier_requirements import render_supplier_requirements
+
+
+def render_target_requirements(result, repo, prefix):
+    product = result.product
+    render_supplier_requirements(product, repo, research_destination(product, repo), "assumptions")
+    st.markdown("**Target variant requirements · your intended product**")
+    st.caption(
+        "Declare requirements you actually intend, for example Color: Black; Capacity: 500ml; "
+        "Count: 1. Use separate lines or semicolons. Blank color remains unspecified and can "
+        "block a colored variant. This edits target inputs, not supplier evidence. "
+        "Existing analysis remains historical; new research is an explicit action."
+    )
+    with st.form(f"target_requirements_{prefix}_{product.id}"):
+        description = st.text_area(
+            "Target description / variant requirements",
+            value=product.description,
+            max_chars=2000,
+            key=f"target_description_{prefix}_{product.id}",
+        )
+        save = st.form_submit_button("Save target requirements and recheck saved offers")
+    if save:
+        # Preserve the original saved analysis/estimates rather than persisting hydrated economics.
+        original = next((r for r in repo.list_saved() if r.product.id == product.id), result)
+        updated = original.model_copy(
+            update={
+                "product": original.product.model_copy(update={"description": description.strip()})
+            }
+        )
+        repo.save(updated)
+        candidate = next((p for p in repo.list_candidates() if p.id == product.id), None)
+        if candidate:
+            repo.add_candidate(candidate.model_copy(update={"description": description.strip()}))
+        st.session_state["results"] = [
+            updated if r.product.id == product.id else r
+            for r in st.session_state.get("results", [])
+        ]
+        SupplierIntelligenceService(repo).recheck_saved(
+            updated.product, research_destination(updated.product, repo)
+        )
+        st.session_state["flash"] = (
+            "Target requirements saved and supplier matches rechecked locally. "
+            "No provider requests; observation times, selection and costs are preserved."
+        )
+        st.rerun()
 
 
 def money_text(value: float | None) -> str:
@@ -126,6 +173,7 @@ def render_products(
             ),
         },
     )
+    render_supplier_comparison(rows, repo, prefix)
     detail_key = f"details_{prefix}"
     ids = [r.product.id for r in rows]
     if st.session_state.get(detail_key) not in ids:
@@ -199,7 +247,9 @@ def render_details(result: ResearchResult, repo: ProductRepository, prefix: str)
             "Market Intelligence",
             "Supplier Intelligence",
         ],
-        default="Research"
+        default="Supplier Intelligence"
+        if st.session_state.get("supplier_focus_product") == product.id
+        else "Research"
         if st.session_state.get("research_focus_product") == product.id
         else "Analysis",
     )
@@ -242,6 +292,7 @@ def render_details(result: ResearchResult, repo: ProductRepository, prefix: str)
             for step in analysis.next_steps:
                 st.write(f"• {step}")
     with evidence_tab:
+        render_target_requirements(result, repo, prefix)
         st.markdown("**Verified data · source evidence only**")
         if product.evidence:
             for evidence in product.evidence:

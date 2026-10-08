@@ -301,7 +301,8 @@ class DemandIntelligenceService:
                 notice = {
                     "SUCCESS": "Provider-relative popularity; not monthly volume or sales.",
                     "SUCCESS_EMPTY": "Successful demand response contains no observations.",
-                    "FAILED": "Demand request failed; prior observations are historical only.",
+                    "FAILED": result.notice
+                    or "Demand request failed; prior observations are historical only.",
                     "UNAVAILABLE": "Measured demand data unavailable.",
                 }[status]
                 outcome = ProviderOutcome(
@@ -309,6 +310,9 @@ class DemandIntelligenceService:
                     notice=notice,
                     observed_at=result.collected_at,
                     records=[result.model_dump(mode="json")] if status == "SUCCESS" else [],
+                    failure_kind=result.failure_kind,
+                    http_status=result.http_status,
+                    provider_status=result.provider_status,
                 )
         if result is None:
             result = DemandResult(
@@ -338,6 +342,9 @@ class DemandIntelligenceService:
                 "observed_at": outcome.observed_at.isoformat(),
                 "cached": cached,
                 "retained": retained,
+                "failure_kind": outcome.failure_kind,
+                "http_status": outcome.http_status,
+                "provider_status": outcome.provider_status,
             }
         )
         run.completed_at = self.clock()

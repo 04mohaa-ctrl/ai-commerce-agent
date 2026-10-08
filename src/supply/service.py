@@ -30,6 +30,70 @@ class SupplierIntelligenceService:
         self.repo = repo if isinstance(repo, SupplyRepository) else SupplyRepository(repo)
         self.provider = provider or CJDropShippingProvider()
 
+    def recheck_saved(self, product, destination):
+        """Explicit local matching only; never refresh provider observations or choices."""
+        report = self.repo.get_report(product.id)
+        if report is None:
+            return None
+        report.offers = [
+            offer.model_copy(update={"match": self.match_offer(product, offer, destination)})
+            for offer in report.offers
+        ]
+        report.input_fingerprint = product_fingerprint(product)
+        # Keep the collection destination/time, stages and provider telemetry intact.
+        # Quote applicability is still checked against the current destination separately.
+        self.repo.save_report(report)
+        return report
+
+    def match_offer(self, product, offer, destination):
+        return match_supplier(
+            product,
+            offer.candidate,
+            offer.variant,
+            destination,
+            requirements=self.repo.get_requirements(product.id),
+        )
+
+    def shipping_request_issue(self, product, destination, *, demo=False, require_provider=True):
+        from src.supply.economics import fresh, selection_issue, stock_issue
+
+        if demo:
+            return "Demo Mode disables shipping requests."
+        if require_provider and not getattr(self.provider, "configured", False):
+            return "CJ credentials are missing. Configure CJ before requesting live freight."
+        selection = self.repo.get_selection(product.id)
+        if issue := selection_issue(selection, destination):
+            return issue
+        report = self.repo.get_report(product.id)
+        if not report or report.input_fingerprint != product_fingerprint(product):
+            return "Saved supplier inputs changed; recheck saved offers locally."
+        current = next(
+            (
+                o
+                for o in report.offers
+                if o.candidate.id == selection.offer.candidate.id
+                and o.variant.id == selection.offer.variant.id
+                and o.stock
+                and selection.offer.stock
+                and o.stock.id == selection.offer.stock.id
+            ),
+            None,
+        )
+        if current is None:
+            return "Selected variant or warehouse is historical; select a current observation."
+        if (
+            current.match != selection.offer.match
+            or self.match_offer(product, current, destination) != current.match
+        ):
+            return "Target requirements changed; recheck and explicitly select a compatible offer."
+        if issue := stock_issue(selection, destination, utc_now(), report.stages):
+            return issue + " Refresh only the needed stock evidence before quoting."
+        if not fresh(current.variant.observed_at, 24, utc_now()):
+            return "Selected variant/parcel evidence is stale."
+        if not current.stock.storage_id or not current.stock.country:
+            return "Shipping requires an observed subwarehouse and origin country."
+        return None
+
     def _component(self, product, destination, component, parameters, call, force, run):
         identity = [
             "supply-v4",
@@ -99,7 +163,9 @@ class SupplierIntelligenceService:
         return records
 
     def _start(self, product, action, action_id=None, max_requests=12):
-        run = ActionTelemetry(action=action, **({"action_id": action_id} if action_id else {}))
+        run = ActionTelemetry(
+            action=action, started_at=utc_now(), **({"action_id": action_id} if action_id else {})
+        )
         if not self.repo.claim_action(run.action_id, product.id):
             return None
         self.provider.reset_action(run, max_requests=max_requests, max_seconds=90)
@@ -195,7 +261,13 @@ class SupplierIntelligenceService:
                 ):
                     continue
                 seen.add(variant.variant_id)
-                match = match_supplier(product, candidate, variant, destination)
+                match = match_supplier(
+                    product,
+                    candidate,
+                    variant,
+                    destination,
+                    requirements=self.repo.get_requirements(product.id),
+                )
                 if match.outcome == "NO_MATCH":
                     report.offers.append(
                         SupplierOffer(candidate=candidate, variant=variant, match=match)
@@ -239,6 +311,7 @@ class SupplierIntelligenceService:
                 "provider": self.provider.name,
                 "status": "UNAVAILABLE",
                 "pending": True,
+                "shipping_state": "NOT_REQUESTED",
                 "notice": "Select an offer explicitly, then Refresh shipping.",
             }
         )
@@ -260,35 +333,28 @@ class SupplierIntelligenceService:
                 for o in report.offers
                 if selection
                 and (
-                    o.variant.provider,
-                    o.variant.variant_id,
-                    o.stock.storage_id if o.stock else None,
+                    o.candidate.id,
+                    o.variant.id,
+                    o.stock.id if o.stock else None,
                 )
                 == (
-                    selection.offer.variant.provider,
-                    selection.offer.variant.variant_id,
-                    selection.offer.stock.storage_id if selection.offer.stock else None,
+                    selection.offer.candidate.id,
+                    selection.offer.variant.id,
+                    selection.offer.stock.id if selection.offer.stock else None,
                 )
             ),
             None,
         )
-        from src.supply.economics import selection_issue
-
-        if (
-            demo
-            or report.input_fingerprint != product_fingerprint(product)
-            or current is None
-            or current.stock is None
-            or selection_issue(selection, destination)
-        ):
+        issue = self.shipping_request_issue(product, destination, demo=demo)
+        if issue or current is None:
             run.stages.append(
                 {
                     "component": "shipping",
                     "provider": self.provider.name,
                     "status": "UNAVAILABLE",
                     "pending": True,
-                    "notice": "A current compatible selected variant and warehouse are required; "
-                    "Demo Mode makes no requests.",
+                    "shipping_state": "BLOCKED",
+                    "notice": issue or "Selected supplier observation is historical.",
                 }
             )
             return self._finish(report, run, started)
@@ -320,6 +386,20 @@ class SupplierIntelligenceService:
             and q.provider == current.variant.provider
             and q.product_id == current.variant.product_id
         ]
+        parsed_status = run.stages[-1]["status"]
+        run.stages[-1]["shipping_state"] = (
+            "SUCCESS"
+            if applicable
+            else "EMPTY"
+            if parsed_status in {"SUCCESS", "SUCCESS_EMPTY"}
+            else "FAILED"
+        )
+        if result.status == "SUCCESS" and quotes and not applicable:
+            run.stages[-1].update(
+                shipping_state="BLOCKED",
+                partial=True,
+                notice="Returned quotes do not match the selected variant/warehouse/destination.",
+            )
         # A refreshed warehouse cohort may contain multiple shipping methods.
         # Replace all of them together; successful empty invalidates every old quote.
         others = [
@@ -340,7 +420,7 @@ class SupplierIntelligenceService:
                 current.stock.storage_id,
             )
         ]
-        if result.status in {"SUCCESS", "SUCCESS_EMPTY"}:
+        if parsed_status in {"SUCCESS", "SUCCESS_EMPTY"}:
             report.offers = others + (
                 [current.model_copy(update={"quote": q}) for q in applicable]
                 if applicable
@@ -359,7 +439,20 @@ class SupplierIntelligenceService:
         if selection and (
             changed_inputs
             or not report
-            or not any(o.id == selection.offer.id for o in report.offers)
+            or not any(
+                o.candidate.id == selection.offer.candidate.id
+                and o.variant.id == selection.offer.variant.id
+                and (o.stock.id if o.stock else None)
+                == (selection.offer.stock.id if selection.offer.stock else None)
+                and o.match == selection.offer.match
+                for o in report.offers
+            )
+            or self.match_offer(
+                product,
+                selection.offer,
+                self.repo.get_settings(product.id) or report.destination,
+            )
+            != selection.offer.match
         ):
             for component in ("match", "search", "details", "variants", "stock", "shipping"):
                 stages.append(
@@ -371,4 +464,13 @@ class SupplierIntelligenceService:
                         "adopt updated observations explicitly.",
                     }
                 )
+        elif selection and not any(o.id == selection.offer.id for o in report.offers):
+            stages.append(
+                {
+                    "component": "shipping",
+                    "provider": selection.offer.variant.provider,
+                    "status": "UNAVAILABLE",
+                    "notice": "Choose a current quote explicitly; product cost stays independent.",
+                }
+            )
         return stages

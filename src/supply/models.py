@@ -173,6 +173,25 @@ class SupplyModel(BaseModel):
         return _safe_data(value)
 
 
+class SupplierRequirements(SupplyModel):
+    """User target preferences, separate from immutable supplier observations."""
+
+    color: str | None = Field(default=None, max_length=40)
+
+    @field_validator("color", mode="before")
+    @classmethod
+    def plain_color(cls, value):
+        if value is None or value == "":
+            return None
+        if not isinstance(value, str) or any(ord(c) < 32 for c in value) or ";" in value:
+            raise ValueError("Enter a plain color name.")
+        return " ".join(value.casefold().split()) or None
+
+    @property
+    def attributes(self):
+        return {"color": self.color} if self.color else {}
+
+
 class Destination(SupplyModel):
     model_config = ConfigDict(frozen=True)
     country: Country = "US"
@@ -399,6 +418,21 @@ class ProviderOutcome(SupplyModel):
     limit_source: LimitSource | None = None
     retry_blocked_by: LocalLimit | None = None
     observed_at: datetime = Field(default_factory=utc_now)
+    failure_kind: (
+        Literal[
+            "CONFIGURATION",
+            "HTTP_REJECTION",
+            "PROVIDER_REJECTION",
+            "TIMEOUT",
+            "TRANSPORT",
+            "INVALID_RESPONSE",
+            "UNKNOWN",
+            "LOCAL_BUDGET",
+        ]
+        | None
+    ) = None
+    http_status: int | None = Field(default=None, ge=100, le=599)
+    provider_status: int | None = None
 
     @model_validator(mode="after")
     def empty_semantics(self):

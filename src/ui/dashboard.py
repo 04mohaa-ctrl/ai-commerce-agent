@@ -1,13 +1,15 @@
 """Application shell, navigation and metrics."""
 
 import json
+import os
+import sys
 from statistics import mean
 
 import streamlit as st
 from pydantic import ValidationError
 
 from src.agents.product_research_agent import ProductResearchAgent
-from src.config import load_settings
+from src.config import PROJECT_ROOT, load_settings
 from src.database.database import DataStoreError, ProductRepository
 from src.research.scoring import hydrate_results
 from src.services.product_service import ResearchService
@@ -15,6 +17,7 @@ from src.ui.products import render_products
 from src.ui.research import render_research
 from src.ui.settings import render_settings
 from src.ui.supplier_intelligence import optional_provider_configured
+from src.ui.supplier_requirements import WORKFLOW_REVISION
 
 
 def main() -> None:
@@ -54,6 +57,11 @@ def main() -> None:
             else "Research mode"
         )
         st.caption("Local candidates. Clear assumptions.\nBuild a shortlist worth researching.")
+        with st.expander("App runtime"):
+            st.write(f"Process {os.getpid()} · {WORKFLOW_REVISION}")
+            st.write(f"Checkout: {PROJECT_ROOT}")
+            st.write(f"Database: {settings.database_path}")
+            st.write(f"Python: {sys.executable}")
     st.title("AI Commerce Agent")
     st.caption("Find promising product ideas and understand the assumptions behind every score.")
     try:

@@ -1,0 +1,1059 @@
+{
+  "country": "SE",
+  "current_eligible": false,
+  "demand": {
+    "collected_at": "2026-10-08T13:41:22.785704Z",
+    "location": "Sweden (2752)",
+    "notice": "Provider-relative popularity, not monthly search volume. Zero means insufficient data.",
+    "observations": [
+      {
+        "collected_at": "2026-10-08T13:41:22.785704Z",
+        "confidence": "medium",
+        "granularity": "7 days",
+        "location": "Sweden (2752)",
+        "metric_name": "keyword_popularity",
+        "missing": true,
+        "notes": [
+          "Provider-relative index; zero means insufficient data."
+        ],
+        "period_end": "2025-10-18",
+        "period_start": "2025-10-12",
+        "provider": "dataforseo_trends",
+        "query": "Foldable Laptop Stand",
+        "series_id": "2e73d225-1177-4d29-829c-54d45c785b7f",
+        "source_url": "https://api.dataforseo.com/v3/keywords_data/dataforseo_trends/explore/live",
+        "unit": "relative_popularity_index",
+        "value": 0.0
+      },
+      {
+        "collected_at": "2026-10-08T13:41:22.785704Z",
+        "confidence": "medium",
+        "granularity": "7 days",
+        "location": "Sweden (2752)",
+        "metric_name": "keyword_popularity",
+        "missing": true,
+        "notes": [
+          "Provider-relative index; zero means insufficient data."
+        ],
+        "period_end": "2025-10-25",
+        "period_start": "2025-10-19",
+        "provider": "dataforseo_trends",
+        "query": "Foldable Laptop Stand",
+        "series_id": "2e73d225-1177-4d29-829c-54d45c785b7f",
+        "source_url": "https://api.dataforseo.com/v3/keywords_data/dataforseo_trends/explore/live",
+        "unit": "relative_popularity_index",
+        "value": 0.0
+      },
+      {
+        "collected_at": "2026-10-08T13:41:22.785704Z",
+        "confidence": "medium",
+        "granularity": "7 days",
+        "location": "Sweden (2752)",
+        "metric_name": "keyword_popularity",
+        "missing": true,
+        "notes": [
+          "Provider-relative index; zero means insufficient data."
+        ],
+        "period_end": "2025-11-01",
+        "period_start": "2025-10-26",
+        "provider": "dataforseo_trends",
+        "query": "Foldable Laptop Stand",
+        "series_id": "2e73d225-1177-4d29-829c-54d45c785b7f",
+        "source_url": "https://api.dataforseo.com/v3/keywords_data/dataforseo_trends/explore/live",
+        "unit": "relative_popularity_index",
+        "value": 0.0
+      },
+      {
+        "collected_at": "2026-10-08T13:41:22.785704Z",
+        "confidence": "medium",
+        "granularity": "7 days",
+        "location": "Sweden (2752)",
+        "metric_name": "keyword_popularity",
+        "missing": false,
+        "notes": [
+          "Provider-relative index; zero means insufficient data."
+        ],
+        "period_end": "2025-11-08",
+        "period_start": "2025-11-02",
+        "provider": "dataforseo_trends",
+        "query": "Foldable Laptop Stand",
+        "series_id": "2e73d225-1177-4d29-829c-54d45c785b7f",
+        "source_url": "https://api.dataforseo.com/v3/keywords_data/dataforseo_trends/explore/live",
+        "unit": "relative_popularity_index",
+        "value": 100.0
+      },
+      {
+        "collected_at": "2026-10-08T13:41:22.785704Z",
+        "confidence": "medium",
+        "granularity": "7 days",
+        "location": "Sweden (2752)",
+        "metric_name": "keyword_popularity",
+        "missing": false,
+        "notes": [
+          "Provider-relative index; zero means insufficient data."
+        ],
+        "period_end": "2025-11-15",
+        "period_start": "2025-11-09",
+        "provider": "dataforseo_trends",
+        "query": "Foldable Laptop Stand",
+        "series_id": "2e73d225-1177-4d29-829c-54d45c785b7f",
+        "source_url": "https://api.dataforseo.com/v3/keywords_data/dataforseo_trends/explore/live",
+        "unit": "relative_popularity_index",
+        "value": 17.0
+      },
+      {
+        "collected_at": "2026-10-08T13:41:22.785704Z",
+        "confidence": "medium",
+        "granularity": "7 days",
+        "location": "Sweden (2752)",
+        "metric_name": "keyword_popularity",
+        "missing": false,
+        "notes": [
+          "Provider-relative index; zero means insufficient data."
+        ],
+        "period_end": "2025-11-22",
+        "period_start": "2025-11-16",
+        "provider": "dataforseo_trends",
+        "query": "Foldable Laptop Stand",
+        "series_id": "2e73d225-1177-4d29-829c-54d45c785b7f",
+        "source_url": "https://api.dataforseo.com/v3/keywords_data/dataforseo_trends/explore/live",
+        "unit": "relative_popularity_index",
+        "value": 3.0
+      },
+      {
+        "collected_at": "2026-10-08T13:41:22.785704Z",
+        "confidence": "medium",
+        "granularity": "7 days",
+        "location": "Sweden (2752)",
+        "metric_name": "keyword_popularity",
+        "missing": true,
+        "notes": [
+          "Provider-relative index; zero means insufficient data."
+        ],
+        "period_end": "2025-11-29",
+        "period_start": "2025-11-23",
+        "provider": "dataforseo_trends",
+        "query": "Foldable Laptop Stand",
+        "series_id": "2e73d225-1177-4d29-829c-54d45c785b7f",
+        "source_url": "https://api.dataforseo.com/v3/keywords_data/dataforseo_trends/explore/live",
+        "unit": "relative_popularity_index",
+        "value": 0.0
+      },
+      {
+        "collected_at": "2026-10-08T13:41:22.785704Z",
+        "confidence": "medium",
+        "granularity": "7 days",
+        "location": "Sweden (2752)",
+        "metric_name": "keyword_popularity",
+        "missing": true,
+        "notes": [
+          "Provider-relative index; zero means insufficient data."
+        ],
+        "period_end": "2025-12-06",
+        "period_start": "2025-11-30",
+        "provider": "dataforseo_trends",
+        "query": "Foldable Laptop Stand",
+        "series_id": "2e73d225-1177-4d29-829c-54d45c785b7f",
+        "source_url": "https://api.dataforseo.com/v3/keywords_data/dataforseo_trends/explore/live",
+        "unit": "relative_popularity_index",
+        "value": 0.0
+      },
+      {
+        "collected_at": "2026-10-08T13:41:22.785704Z",
+        "confidence": "medium",
+        "granularity": "7 days",
+        "location": "Sweden (2752)",
+        "metric_name": "keyword_popularity",
+        "missing": true,
+        "notes": [
+          "Provider-relative index; zero means insufficient data."
+        ],
+        "period_end": "2025-12-13",
+        "period_start": "2025-12-07",
+        "provider": "dataforseo_trends",
+        "query": "Foldable Laptop Stand",
+        "series_id": "2e73d225-1177-4d29-829c-54d45c785b7f",
+        "source_url": "https://api.dataforseo.com/v3/keywords_data/dataforseo_trends/explore/live",
+        "unit": "relative_popularity_index",
+        "value": 0.0
+      },
+      {
+        "collected_at": "2026-10-08T13:41:22.785704Z",
+        "confidence": "medium",
+        "granularity": "7 days",
+        "location": "Sweden (2752)",
+        "metric_name": "keyword_popularity",
+        "missing": true,
+        "notes": [
+          "Provider-relative index; zero means insufficient data."
+        ],
+        "period_end": "2025-12-20",
+        "period_start": "2025-12-14",
+        "provider": "dataforseo_trends",
+        "query": "Foldable Laptop Stand",
+        "series_id": "2e73d225-1177-4d29-829c-54d45c785b7f",
+        "source_url": "https://api.dataforseo.com/v3/keywords_data/dataforseo_trends/explore/live",
+        "unit": "relative_popularity_index",
+        "value": 0.0
+      },
+      {
+        "collected_at": "2026-10-08T13:41:22.785704Z",
+        "confidence": "medium",
+        "granularity": "7 days",
+        "location": "Sweden (2752)",
+        "metric_name": "keyword_popularity",
+        "missing": true,
+        "notes": [
+          "Provider-relative index; zero means insufficient data."
+        ],
+        "period_end": "2025-12-27",
+        "period_start": "2025-12-21",
+        "provider": "dataforseo_trends",
+        "query": "Foldable Laptop Stand",
+        "series_id": "2e73d225-1177-4d29-829c-54d45c785b7f",
+        "source_url": "https://api.dataforseo.com/v3/keywords_data/dataforseo_trends/explore/live",
+        "unit": "relative_popularity_index",
+        "value": 0.0
+      },
+      {
+        "collected_at": "2026-10-08T13:41:22.785704Z",
+        "confidence": "medium",
+        "granularity": "7 days",
+        "location": "Sweden (2752)",
+        "metric_name": "keyword_popularity",
+        "missing": true,
+        "notes": [
+          "Provider-relative index; zero means insufficient data."
+        ],
+        "period_end": "2026-01-03",
+        "period_start": "2025-12-28",
+        "provider": "dataforseo_trends",
+        "query": "Foldable Laptop Stand",
+        "series_id": "2e73d225-1177-4d29-829c-54d45c785b7f",
+        "source_url": "https://api.dataforseo.com/v3/keywords_data/dataforseo_trends/explore/live",
+        "unit": "relative_popularity_index",
+        "value": 0.0
+      },
+      {
+        "collected_at": "2026-10-08T13:41:22.785704Z",
+        "confidence": "medium",
+        "granularity": "7 days",
+        "location": "Sweden (2752)",
+        "metric_name": "keyword_popularity",
+        "missing": true,
+        "notes": [
+          "Provider-relative index; zero means insufficient data."
+        ],
+        "period_end": "2026-01-10",
+        "period_start": "2026-01-04",
+        "provider": "dataforseo_trends",
+        "query": "Foldable Laptop Stand",
+        "series_id": "2e73d225-1177-4d29-829c-54d45c785b7f",
+        "source_url": "https://api.dataforseo.com/v3/keywords_data/dataforseo_trends/explore/live",
+        "unit": "relative_popularity_index",
+        "value": 0.0
+      },
+      {
+        "collected_at": "2026-10-08T13:41:22.785704Z",
+        "confidence": "medium",
+        "granularity": "7 days",
+        "location": "Sweden (2752)",
+        "metric_name": "keyword_popularity",
+        "missing": true,
+        "notes": [
+          "Provider-relative index; zero means insufficient data."
+        ],
+        "period_end": "2026-01-17",
+        "period_start": "2026-01-11",
+        "provider": "dataforseo_trends",
+        "query": "Foldable Laptop Stand",
+        "series_id": "2e73d225-1177-4d29-829c-54d45c785b7f",
+        "source_url": "https://api.dataforseo.com/v3/keywords_data/dataforseo_trends/explore/live",
+        "unit": "relative_popularity_index",
+        "value": 0.0
+      },
+      {
+        "collected_at": "2026-10-08T13:41:22.785704Z",
+        "confidence": "medium",
+        "granularity": "7 days",
+        "location": "Sweden (2752)",
+        "metric_name": "keyword_popularity",
+        "missing": true,
+        "notes": [
+          "Provider-relative index; zero means insufficient data."
+        ],
+        "period_end": "2026-01-24",
+        "period_start": "2026-01-18",
+        "provider": "dataforseo_trends",
+        "query": "Foldable Laptop Stand",
+        "series_id": "2e73d225-1177-4d29-829c-54d45c785b7f",
+        "source_url": "https://api.dataforseo.com/v3/keywords_data/dataforseo_trends/explore/live",
+        "unit": "relative_popularity_index",
+        "value": 0.0
+      },
+      {
+        "collected_at": "2026-10-08T13:41:22.785704Z",
+        "confidence": "medium",
+        "granularity": "7 days",
+        "location": "Sweden (2752)",
+        "metric_name": "keyword_popularity",
+        "missing": true,
+        "notes": [
+          "Provider-relative index; zero means insufficient data."
+        ],
+        "period_end": "2026-01-31",
+        "period_start": "2026-01-25",
+        "provider": "dataforseo_trends",
+        "query": "Foldable Laptop Stand",
+        "series_id": "2e73d225-1177-4d29-829c-54d45c785b7f",
+        "source_url": "https://api.dataforseo.com/v3/keywords_data/dataforseo_trends/explore/live",
+        "unit": "relative_popularity_index",
+        "value": 0.0
+      },
+      {
+        "collected_at": "2026-10-08T13:41:22.785704Z",
+        "confidence": "medium",
+        "granularity": "7 days",
+        "location": "Sweden (2752)",
+        "metric_name": "keyword_popularity",
+        "missing": true,
+        "notes": [
+          "Provider-relative index; zero means insufficient data."
+        ],
+        "period_end": "2026-02-07",
+        "period_start": "2026-02-01",
+        "provider": "dataforseo_trends",
+        "query": "Foldable Laptop Stand",
+        "series_id": "2e73d225-1177-4d29-829c-54d45c785b7f",
+        "source_url": "https://api.dataforseo.com/v3/keywords_data/dataforseo_trends/explore/live",
+        "unit": "relative_popularity_index",
+        "value": 0.0
+      },
+      {
+        "collected_at": "2026-10-08T13:41:22.785704Z",
+        "confidence": "medium",
+        "granularity": "7 days",
+        "location": "Sweden (2752)",
+        "metric_name": "keyword_popularity",
+        "missing": true,
+        "notes": [
+          "Provider-relative index; zero means insufficient data."
+        ],
+        "period_end": "2026-02-14",
+        "period_start": "2026-02-08",
+        "provider": "dataforseo_trends",
+        "query": "Foldable Laptop Stand",
+        "series_id": "2e73d225-1177-4d29-829c-54d45c785b7f",
+        "source_url": "https://api.dataforseo.com/v3/keywords_data/dataforseo_trends/explore/live",
+        "unit": "relative_popularity_index",
+        "value": 0.0
+      },
+      {
+        "collected_at": "2026-10-08T13:41:22.785704Z",
+        "confidence": "medium",
+        "granularity": "7 days",
+        "location": "Sweden (2752)",
+        "metric_name": "keyword_popularity",
+        "missing": true,
+        "notes": [
+          "Provider-relative index; zero means insufficient data."
+        ],
+        "period_end": "2026-02-21",
+        "period_start": "2026-02-15",
+        "provider": "dataforseo_trends",
+        "query": "Foldable Laptop Stand",
+        "series_id": "2e73d225-1177-4d29-829c-54d45c785b7f",
+        "source_url": "https://api.dataforseo.com/v3/keywords_data/dataforseo_trends/explore/live",
+        "unit": "relative_popularity_index",
+        "value": 0.0
+      },
+      {
+        "collected_at": "2026-10-08T13:41:22.785704Z",
+        "confidence": "medium",
+        "granularity": "7 days",
+        "location": "Sweden (2752)",
+        "metric_name": "keyword_popularity",
+        "missing": true,
+        "notes": [
+          "Provider-relative index; zero means insufficient data."
+        ],
+        "period_end": "2026-02-28",
+        "period_start": "2026-02-22",
+        "provider": "dataforseo_trends",
+        "query": "Foldable Laptop Stand",
+        "series_id": "2e73d225-1177-4d29-829c-54d45c785b7f",
+        "source_url": "https://api.dataforseo.com/v3/keywords_data/dataforseo_trends/explore/live",
+        "unit": "relative_popularity_index",
+        "value": 0.0
+      },
+      {
+        "collected_at": "2026-10-08T13:41:22.785704Z",
+        "confidence": "medium",
+        "granularity": "7 days",
+        "location": "Sweden (2752)",
+        "metric_name": "keyword_popularity",
+        "missing": true,
+        "notes": [
+          "Provider-relative index; zero means insufficient data."
+        ],
+        "period_end": "2026-03-07",
+        "period_start": "2026-03-01",
+        "provider": "dataforseo_trends",
+        "query": "Foldable Laptop Stand",
+        "series_id": "2e73d225-1177-4d29-829c-54d45c785b7f",
+        "source_url": "https://api.dataforseo.com/v3/keywords_data/dataforseo_trends/explore/live",
+        "unit": "relative_popularity_index",
+        "value": 0.0
+      },
+      {
+        "collected_at": "2026-10-08T13:41:22.785704Z",
+        "confidence": "medium",
+        "granularity": "7 days",
+        "location": "Sweden (2752)",
+        "metric_name": "keyword_popularity",
+        "missing": true,
+        "notes": [
+          "Provider-relative index; zero means insufficient data."
+        ],
+        "period_end": "2026-03-14",
+        "period_start": "2026-03-08",
+        "provider": "dataforseo_trends",
+        "query": "Foldable Laptop Stand",
+        "series_id": "2e73d225-1177-4d29-829c-54d45c785b7f",
+        "source_url": "https://api.dataforseo.com/v3/keywords_data/dataforseo_trends/explore/live",
+        "unit": "relative_popularity_index",
+        "value": 0.0
+      },
+      {
+        "collected_at": "2026-10-08T13:41:22.785704Z",
+        "confidence": "medium",
+        "granularity": "7 days",
+        "location": "Sweden (2752)",
+        "metric_name": "keyword_popularity",
+        "missing": true,
+        "notes": [
+          "Provider-relative index; zero means insufficient data."
+        ],
+        "period_end": "2026-03-21",
+        "period_start": "2026-03-15",
+        "provider": "dataforseo_trends",
+        "query": "Foldable Laptop Stand",
+        "series_id": "2e73d225-1177-4d29-829c-54d45c785b7f",
+        "source_url": "https://api.dataforseo.com/v3/keywords_data/dataforseo_trends/explore/live",
+        "unit": "relative_popularity_index",
+        "value": 0.0
+      },
+      {
+        "collected_at": "2026-10-08T13:41:22.785704Z",
+        "confidence": "medium",
+        "granularity": "7 days",
+        "location": "Sweden (2752)",
+        "metric_name": "keyword_popularity",
+        "missing": true,
+        "notes": [
+          "Provider-relative index; zero means insufficient data."
+        ],
+        "period_end": "2026-03-28",
+        "period_start": "2026-03-22",
+        "provider": "dataforseo_trends",
+        "query": "Foldable Laptop Stand",
+        "series_id": "2e73d225-1177-4d29-829c-54d45c785b7f",
+        "source_url": "https://api.dataforseo.com/v3/keywords_data/dataforseo_trends/explore/live",
+        "unit": "relative_popularity_index",
+        "value": 0.0
+      },
+      {
+        "collected_at": "2026-10-08T13:41:22.785704Z",
+        "confidence": "medium",
+        "granularity": "7 days",
+        "location": "Sweden (2752)",
+        "metric_name": "keyword_popularity",
+        "missing": true,
+        "notes": [
+          "Provider-relative index; zero means insufficient data."
+        ],
+        "period_end": "2026-04-04",
+        "period_start": "2026-03-29",
+        "provider": "dataforseo_trends",
+        "query": "Foldable Laptop Stand",
+        "series_id": "2e73d225-1177-4d29-829c-54d45c785b7f",
+        "source_url": "https://api.dataforseo.com/v3/keywords_data/dataforseo_trends/explore/live",
+        "unit": "relative_popularity_index",
+        "value": 0.0
+      },
+      {
+        "collected_at": "2026-10-08T13:41:22.785704Z",
+        "confidence": "medium",
+        "granularity": "7 days",
+        "location": "Sweden (2752)",
+        "metric_name": "keyword_popularity",
+        "missing": true,
+        "notes": [
+          "Provider-relative index; zero means insufficient data."
+        ],
+        "period_end": "2026-04-11",
+        "period_start": "2026-04-05",
+        "provider": "dataforseo_trends",
+        "query": "Foldable Laptop Stand",
+        "series_id": "2e73d225-1177-4d29-829c-54d45c785b7f",
+        "source_url": "https://api.dataforseo.com/v3/keywords_data/dataforseo_trends/explore/live",
+        "unit": "relative_popularity_index",
+        "value": 0.0
+      },
+      {
+        "collected_at": "2026-10-08T13:41:22.785704Z",
+        "confidence": "medium",
+        "granularity": "7 days",
+        "location": "Sweden (2752)",
+        "metric_name": "keyword_popularity",
+        "missing": true,
+        "notes": [
+          "Provider-relative index; zero means insufficient data."
+        ],
+        "period_end": "2026-04-18",
+        "period_start": "2026-04-12",
+        "provider": "dataforseo_trends",
+        "query": "Foldable Laptop Stand",
+        "series_id": "2e73d225-1177-4d29-829c-54d45c785b7f",
+        "source_url": "https://api.dataforseo.com/v3/keywords_data/dataforseo_trends/explore/live",
+        "unit": "relative_popularity_index",
+        "value": 0.0
+      },
+      {
+        "collected_at": "2026-10-08T13:41:22.785704Z",
+        "confidence": "medium",
+        "granularity": "7 days",
+        "location": "Sweden (2752)",
+        "metric_name": "keyword_popularity",
+        "missing": true,
+        "notes": [
+          "Provider-relative index; zero means insufficient data."
+        ],
+        "period_end": "2026-04-25",
+        "period_start": "2026-04-19",
+        "provider": "dataforseo_trends",
+        "query": "Foldable Laptop Stand",
+        "series_id": "2e73d225-1177-4d29-829c-54d45c785b7f",
+        "source_url": "https://api.dataforseo.com/v3/keywords_data/dataforseo_trends/explore/live",
+        "unit": "relative_popularity_index",
+        "value": 0.0
+      },
+      {
+        "collected_at": "2026-10-08T13:41:22.785704Z",
+        "confidence": "medium",
+        "granularity": "7 days",
+        "location": "Sweden (2752)",
+        "metric_name": "keyword_popularity",
+        "missing": true,
+        "notes": [
+          "Provider-relative index; zero means insufficient data."
+        ],
+        "period_end": "2026-05-02",
+        "period_start": "2026-04-26",
+        "provider": "dataforseo_trends",
+        "query": "Foldable Laptop Stand",
+        "series_id": "2e73d225-1177-4d29-829c-54d45c785b7f",
+        "source_url": "https://api.dataforseo.com/v3/keywords_data/dataforseo_trends/explore/live",
+        "unit": "relative_popularity_index",
+        "value": 0.0
+      },
+      {
+        "collected_at": "2026-10-08T13:41:22.785704Z",
+        "confidence": "medium",
+        "granularity": "7 days",
+        "location": "Sweden (2752)",
+        "metric_name": "keyword_popularity",
+        "missing": true,
+        "notes": [
+          "Provider-relative index; zero means insufficient data."
+        ],
+        "period_end": "2026-05-09",
+        "period_start": "2026-05-03",
+        "provider": "dataforseo_trends",
+        "query": "Foldable Laptop Stand",
+        "series_id": "2e73d225-1177-4d29-829c-54d45c785b7f",
+        "source_url": "https://api.dataforseo.com/v3/keywords_data/dataforseo_trends/explore/live",
+        "unit": "relative_popularity_index",
+        "value": 0.0
+      },
+      {
+        "collected_at": "2026-10-08T13:41:22.785704Z",
+        "confidence": "medium",
+        "granularity": "7 days",
+        "location": "Sweden (2752)",
+        "metric_name": "keyword_popularity",
+        "missing": true,
+        "notes": [
+          "Provider-relative index; zero means insufficient data."
+        ],
+        "period_end": "2026-05-16",
+        "period_start": "2026-05-10",
+        "provider": "dataforseo_trends",
+        "query": "Foldable Laptop Stand",
+        "series_id": "2e73d225-1177-4d29-829c-54d45c785b7f",
+        "source_url": "https://api.dataforseo.com/v3/keywords_data/dataforseo_trends/explore/live",
+        "unit": "relative_popularity_index",
+        "value": 0.0
+      },
+      {
+        "collected_at": "2026-10-08T13:41:22.785704Z",
+        "confidence": "medium",
+        "granularity": "7 days",
+        "location": "Sweden (2752)",
+        "metric_name": "keyword_popularity",
+        "missing": true,
+        "notes": [
+          "Provider-relative index; zero means insufficient data."
+        ],
+        "period_end": "2026-05-23",
+        "period_start": "2026-05-17",
+        "provider": "dataforseo_trends",
+        "query": "Foldable Laptop Stand",
+        "series_id": "2e73d225-1177-4d29-829c-54d45c785b7f",
+        "source_url": "https://api.dataforseo.com/v3/keywords_data/dataforseo_trends/explore/live",
+        "unit": "relative_popularity_index",
+        "value": 0.0
+      },
+      {
+        "collected_at": "2026-10-08T13:41:22.785704Z",
+        "confidence": "medium",
+        "granularity": "7 days",
+        "location": "Sweden (2752)",
+        "metric_name": "keyword_popularity",
+        "missing": true,
+        "notes": [
+          "Provider-relative index; zero means insufficient data."
+        ],
+        "period_end": "2026-05-30",
+        "period_start": "2026-05-24",
+        "provider": "dataforseo_trends",
+        "query": "Foldable Laptop Stand",
+        "series_id": "2e73d225-1177-4d29-829c-54d45c785b7f",
+        "source_url": "https://api.dataforseo.com/v3/keywords_data/dataforseo_trends/explore/live",
+        "unit": "relative_popularity_index",
+        "value": 0.0
+      },
+      {
+        "collected_at": "2026-10-08T13:41:22.785704Z",
+        "confidence": "medium",
+        "granularity": "7 days",
+        "location": "Sweden (2752)",
+        "metric_name": "keyword_popularity",
+        "missing": true,
+        "notes": [
+          "Provider-relative index; zero means insufficient data."
+        ],
+        "period_end": "2026-06-06",
+        "period_start": "2026-05-31",
+        "provider": "dataforseo_trends",
+        "query": "Foldable Laptop Stand",
+        "series_id": "2e73d225-1177-4d29-829c-54d45c785b7f",
+        "source_url": "https://api.dataforseo.com/v3/keywords_data/dataforseo_trends/explore/live",
+        "unit": "relative_popularity_index",
+        "value": 0.0
+      },
+      {
+        "collected_at": "2026-10-08T13:41:22.785704Z",
+        "confidence": "medium",
+        "granularity": "7 days",
+        "location": "Sweden (2752)",
+        "metric_name": "keyword_popularity",
+        "missing": true,
+        "notes": [
+          "Provider-relative index; zero means insufficient data."
+        ],
+        "period_end": "2026-06-13",
+        "period_start": "2026-06-07",
+        "provider": "dataforseo_trends",
+        "query": "Foldable Laptop Stand",
+        "series_id": "2e73d225-1177-4d29-829c-54d45c785b7f",
+        "source_url": "https://api.dataforseo.com/v3/keywords_data/dataforseo_trends/explore/live",
+        "unit": "relative_popularity_index",
+        "value": 0.0
+      },
+      {
+        "collected_at": "2026-10-08T13:41:22.785704Z",
+        "confidence": "medium",
+        "granularity": "7 days",
+        "location": "Sweden (2752)",
+        "metric_name": "keyword_popularity",
+        "missing": true,
+        "notes": [
+          "Provider-relative index; zero means insufficient data."
+        ],
+        "period_end": "2026-06-20",
+        "period_start": "2026-06-14",
+        "provider": "dataforseo_trends",
+        "query": "Foldable Laptop Stand",
+        "series_id": "2e73d225-1177-4d29-829c-54d45c785b7f",
+        "source_url": "https://api.dataforseo.com/v3/keywords_data/dataforseo_trends/explore/live",
+        "unit": "relative_popularity_index",
+        "value": 0.0
+      },
+      {
+        "collected_at": "2026-10-08T13:41:22.785704Z",
+        "confidence": "medium",
+        "granularity": "7 days",
+        "location": "Sweden (2752)",
+        "metric_name": "keyword_popularity",
+        "missing": true,
+        "notes": [
+          "Provider-relative index; zero means insufficient data."
+        ],
+        "period_end": "2026-06-27",
+        "period_start": "2026-06-21",
+        "provider": "dataforseo_trends",
+        "query": "Foldable Laptop Stand",
+        "series_id": "2e73d225-1177-4d29-829c-54d45c785b7f",
+        "source_url": "https://api.dataforseo.com/v3/keywords_data/dataforseo_trends/explore/live",
+        "unit": "relative_popularity_index",
+        "value": 0.0
+      },
+      {
+        "collected_at": "2026-10-08T13:41:22.785704Z",
+        "confidence": "medium",
+        "granularity": "7 days",
+        "location": "Sweden (2752)",
+        "metric_name": "keyword_popularity",
+        "missing": true,
+        "notes": [
+          "Provider-relative index; zero means insufficient data."
+        ],
+        "period_end": "2026-07-04",
+        "period_start": "2026-06-28",
+        "provider": "dataforseo_trends",
+        "query": "Foldable Laptop Stand",
+        "series_id": "2e73d225-1177-4d29-829c-54d45c785b7f",
+        "source_url": "https://api.dataforseo.com/v3/keywords_data/dataforseo_trends/explore/live",
+        "unit": "relative_popularity_index",
+        "value": 0.0
+      },
+      {
+        "collected_at": "2026-10-08T13:41:22.785704Z",
+        "confidence": "medium",
+        "granularity": "7 days",
+        "location": "Sweden (2752)",
+        "metric_name": "keyword_popularity",
+        "missing": true,
+        "notes": [
+          "Provider-relative index; zero means insufficient data."
+        ],
+        "period_end": "2026-07-11",
+        "period_start": "2026-07-05",
+        "provider": "dataforseo_trends",
+        "query": "Foldable Laptop Stand",
+        "series_id": "2e73d225-1177-4d29-829c-54d45c785b7f",
+        "source_url": "https://api.dataforseo.com/v3/keywords_data/dataforseo_trends/explore/live",
+        "unit": "relative_popularity_index",
+        "value": 0.0
+      },
+      {
+        "collected_at": "2026-10-08T13:41:22.785704Z",
+        "confidence": "medium",
+        "granularity": "7 days",
+        "location": "Sweden (2752)",
+        "metric_name": "keyword_popularity",
+        "missing": true,
+        "notes": [
+          "Provider-relative index; zero means insufficient data."
+        ],
+        "period_end": "2026-07-18",
+        "period_start": "2026-07-12",
+        "provider": "dataforseo_trends",
+        "query": "Foldable Laptop Stand",
+        "series_id": "2e73d225-1177-4d29-829c-54d45c785b7f",
+        "source_url": "https://api.dataforseo.com/v3/keywords_data/dataforseo_trends/explore/live",
+        "unit": "relative_popularity_index",
+        "value": 0.0
+      },
+      {
+        "collected_at": "2026-10-08T13:41:22.785704Z",
+        "confidence": "medium",
+        "granularity": "7 days",
+        "location": "Sweden (2752)",
+        "metric_name": "keyword_popularity",
+        "missing": true,
+        "notes": [
+          "Provider-relative index; zero means insufficient data."
+        ],
+        "period_end": "2026-07-25",
+        "period_start": "2026-07-19",
+        "provider": "dataforseo_trends",
+        "query": "Foldable Laptop Stand",
+        "series_id": "2e73d225-1177-4d29-829c-54d45c785b7f",
+        "source_url": "https://api.dataforseo.com/v3/keywords_data/dataforseo_trends/explore/live",
+        "unit": "relative_popularity_index",
+        "value": 0.0
+      },
+      {
+        "collected_at": "2026-10-08T13:41:22.785704Z",
+        "confidence": "medium",
+        "granularity": "7 days",
+        "location": "Sweden (2752)",
+        "metric_name": "keyword_popularity",
+        "missing": true,
+        "notes": [
+          "Provider-relative index; zero means insufficient data."
+        ],
+        "period_end": "2026-08-01",
+        "period_start": "2026-07-26",
+        "provider": "dataforseo_trends",
+        "query": "Foldable Laptop Stand",
+        "series_id": "2e73d225-1177-4d29-829c-54d45c785b7f",
+        "source_url": "https://api.dataforseo.com/v3/keywords_data/dataforseo_trends/explore/live",
+        "unit": "relative_popularity_index",
+        "value": 0.0
+      },
+      {
+        "collected_at": "2026-10-08T13:41:22.785704Z",
+        "confidence": "medium",
+        "granularity": "7 days",
+        "location": "Sweden (2752)",
+        "metric_name": "keyword_popularity",
+        "missing": true,
+        "notes": [
+          "Provider-relative index; zero means insufficient data."
+        ],
+        "period_end": "2026-08-08",
+        "period_start": "2026-08-02",
+        "provider": "dataforseo_trends",
+        "query": "Foldable Laptop Stand",
+        "series_id": "2e73d225-1177-4d29-829c-54d45c785b7f",
+        "source_url": "https://api.dataforseo.com/v3/keywords_data/dataforseo_trends/explore/live",
+        "unit": "relative_popularity_index",
+        "value": 0.0
+      },
+      {
+        "collected_at": "2026-10-08T13:41:22.785704Z",
+        "confidence": "medium",
+        "granularity": "7 days",
+        "location": "Sweden (2752)",
+        "metric_name": "keyword_popularity",
+        "missing": true,
+        "notes": [
+          "Provider-relative index; zero means insufficient data."
+        ],
+        "period_end": "2026-08-15",
+        "period_start": "2026-08-09",
+        "provider": "dataforseo_trends",
+        "query": "Foldable Laptop Stand",
+        "series_id": "2e73d225-1177-4d29-829c-54d45c785b7f",
+        "source_url": "https://api.dataforseo.com/v3/keywords_data/dataforseo_trends/explore/live",
+        "unit": "relative_popularity_index",
+        "value": 0.0
+      },
+      {
+        "collected_at": "2026-10-08T13:41:22.785704Z",
+        "confidence": "medium",
+        "granularity": "7 days",
+        "location": "Sweden (2752)",
+        "metric_name": "keyword_popularity",
+        "missing": true,
+        "notes": [
+          "Provider-relative index; zero means insufficient data."
+        ],
+        "period_end": "2026-08-22",
+        "period_start": "2026-08-16",
+        "provider": "dataforseo_trends",
+        "query": "Foldable Laptop Stand",
+        "series_id": "2e73d225-1177-4d29-829c-54d45c785b7f",
+        "source_url": "https://api.dataforseo.com/v3/keywords_data/dataforseo_trends/explore/live",
+        "unit": "relative_popularity_index",
+        "value": 0.0
+      },
+      {
+        "collected_at": "2026-10-08T13:41:22.785704Z",
+        "confidence": "medium",
+        "granularity": "7 days",
+        "location": "Sweden (2752)",
+        "metric_name": "keyword_popularity",
+        "missing": true,
+        "notes": [
+          "Provider-relative index; zero means insufficient data."
+        ],
+        "period_end": "2026-08-29",
+        "period_start": "2026-08-23",
+        "provider": "dataforseo_trends",
+        "query": "Foldable Laptop Stand",
+        "series_id": "2e73d225-1177-4d29-829c-54d45c785b7f",
+        "source_url": "https://api.dataforseo.com/v3/keywords_data/dataforseo_trends/explore/live",
+        "unit": "relative_popularity_index",
+        "value": 0.0
+      },
+      {
+        "collected_at": "2026-10-08T13:41:22.785704Z",
+        "confidence": "medium",
+        "granularity": "7 days",
+        "location": "Sweden (2752)",
+        "metric_name": "keyword_popularity",
+        "missing": true,
+        "notes": [
+          "Provider-relative index; zero means insufficient data."
+        ],
+        "period_end": "2026-09-05",
+        "period_start": "2026-08-30",
+        "provider": "dataforseo_trends",
+        "query": "Foldable Laptop Stand",
+        "series_id": "2e73d225-1177-4d29-829c-54d45c785b7f",
+        "source_url": "https://api.dataforseo.com/v3/keywords_data/dataforseo_trends/explore/live",
+        "unit": "relative_popularity_index",
+        "value": 0.0
+      },
+      {
+        "collected_at": "2026-10-08T13:41:22.785704Z",
+        "confidence": "medium",
+        "granularity": "7 days",
+        "location": "Sweden (2752)",
+        "metric_name": "keyword_popularity",
+        "missing": true,
+        "notes": [
+          "Provider-relative index; zero means insufficient data."
+        ],
+        "period_end": "2026-09-12",
+        "period_start": "2026-09-06",
+        "provider": "dataforseo_trends",
+        "query": "Foldable Laptop Stand",
+        "series_id": "2e73d225-1177-4d29-829c-54d45c785b7f",
+        "source_url": "https://api.dataforseo.com/v3/keywords_data/dataforseo_trends/explore/live",
+        "unit": "relative_popularity_index",
+        "value": 0.0
+      },
+      {
+        "collected_at": "2026-10-08T13:41:22.785704Z",
+        "confidence": "medium",
+        "granularity": "7 days",
+        "location": "Sweden (2752)",
+        "metric_name": "keyword_popularity",
+        "missing": true,
+        "notes": [
+          "Provider-relative index; zero means insufficient data."
+        ],
+        "period_end": "2026-09-19",
+        "period_start": "2026-09-13",
+        "provider": "dataforseo_trends",
+        "query": "Foldable Laptop Stand",
+        "series_id": "2e73d225-1177-4d29-829c-54d45c785b7f",
+        "source_url": "https://api.dataforseo.com/v3/keywords_data/dataforseo_trends/explore/live",
+        "unit": "relative_popularity_index",
+        "value": 0.0
+      },
+      {
+        "collected_at": "2026-10-08T13:41:22.785704Z",
+        "confidence": "medium",
+        "granularity": "7 days",
+        "location": "Sweden (2752)",
+        "metric_name": "keyword_popularity",
+        "missing": true,
+        "notes": [
+          "Provider-relative index; zero means insufficient data."
+        ],
+        "period_end": "2026-09-26",
+        "period_start": "2026-09-20",
+        "provider": "dataforseo_trends",
+        "query": "Foldable Laptop Stand",
+        "series_id": "2e73d225-1177-4d29-829c-54d45c785b7f",
+        "source_url": "https://api.dataforseo.com/v3/keywords_data/dataforseo_trends/explore/live",
+        "unit": "relative_popularity_index",
+        "value": 0.0
+      },
+      {
+        "collected_at": "2026-10-08T13:41:22.785704Z",
+        "confidence": "medium",
+        "granularity": "7 days",
+        "location": "Sweden (2752)",
+        "metric_name": "keyword_popularity",
+        "missing": true,
+        "notes": [
+          "Provider-relative index; zero means insufficient data."
+        ],
+        "period_end": "2026-10-03",
+        "period_start": "2026-09-27",
+        "provider": "dataforseo_trends",
+        "query": "Foldable Laptop Stand",
+        "series_id": "2e73d225-1177-4d29-829c-54d45c785b7f",
+        "source_url": "https://api.dataforseo.com/v3/keywords_data/dataforseo_trends/explore/live",
+        "unit": "relative_popularity_index",
+        "value": 0.0
+      },
+      {
+        "collected_at": "2026-10-08T13:41:22.785704Z",
+        "confidence": "medium",
+        "granularity": "4 days",
+        "location": "Sweden (2752)",
+        "metric_name": "keyword_popularity",
+        "missing": true,
+        "notes": [
+          "Provider-relative index; zero means insufficient data."
+        ],
+        "period_end": "2026-10-07",
+        "period_start": "2026-10-04",
+        "provider": "dataforseo_trends",
+        "query": "Foldable Laptop Stand",
+        "series_id": "2e73d225-1177-4d29-829c-54d45c785b7f",
+        "source_url": "https://api.dataforseo.com/v3/keywords_data/dataforseo_trends/explore/live",
+        "unit": "relative_popularity_index",
+        "value": 0.0
+      }
+    ],
+    "provider": "dataforseo_trends",
+    "query": "Foldable Laptop Stand",
+    "status": "completed"
+  },
+  "input_fingerprint": "d412bd7818ddf90f39ab427532d384edbc61b9aedb8a98ab5f28770e1d1f4c45",
+  "location": "Sweden (2752)",
+  "outcome": {
+    "limit_source": null,
+    "notice": "Demand request failed; prior observations are historical only.",
+    "observed_at": "2026-10-08T14:20:22.613581Z",
+    "partial": false,
+    "records": [],
+    "rejected": 0,
+    "retry_blocked_by": null,
+    "status": "FAILED"
+  },
+  "period_end": "2026-10-07",
+  "period_start": "2025-10-08",
+  "product_id": "d5837e9c897625ce12a88c88",
+  "provider": "dataforseo_trends",
+  "query": "Foldable Laptop Stand",
+  "request_context": "cc6178f23349ead4d5f6d244839fa0908255d5b8aa46e8625072c68daa7922f1",
+  "retained": true,
+  "telemetry": {
+    "action": "demand",
+    "action_id": "4f4d0786-8b70-4491-97fd-8400bfcac26f",
+    "cache_hits": [
+      "demand-v3"
+    ],
+    "completed_at": "2026-10-08T14:20:53.754816Z",
+    "elapsed_seconds": 0.030999999959021807,
+    "requests": {
+      "dataforseo_trends": 0
+    },
+    "retries": 0,
+    "stages": [
+      {
+        "cached": true,
+        "component": "demand",
+        "country": "SE",
+        "location": "Sweden (2752)",
+        "notice": "Demand request failed; prior observations are historical only.",
+        "observed_at": "2026-10-08T14:20:22.613581+00:00",
+        "provider": "dataforseo_trends",
+        "query": "Foldable Laptop Stand",
+        "retained": true,
+        "status": "FAILED"
+      }
+    ],
+    "started_at": "2026-10-08T14:20:53.723986Z"
+  },
+  "trend": {
+    "change_percent": null,
+    "classification": "INSUFFICIENT_DATA",
+    "notes": [],
+    "observation_count": 0,
+    "period_end": null,
+    "period_start": null,
+    "prior_average": null,
+    "recent_average": null
+  }
+}

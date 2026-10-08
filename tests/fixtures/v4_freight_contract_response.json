@@ -1,0 +1,14 @@
+{
+  "provenance": "Replay of the repository freight parsing contract fixture; synthetic response, not captured live Swedish freight evidence",
+  "response": {
+    "code": 200,
+    "result": true,
+    "data": [
+      {
+        "logisticName": "Replayed contract parcel",
+        "logisticPrice": "12.00",
+        "logisticAging": "2-5"
+      }
+    ]
+  }
+}

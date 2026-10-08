@@ -291,7 +291,13 @@ def test_manual_edits_preserve_unchanged_observed_provenance_and_refresh_never_a
 
 
 def test_financial_derived_revision_and_v3_pinned_values_stay_unchanged():
-    snapshot = FinancialSnapshot(inputs=complete_inputs(), updated_at=NOW)
+    from src.supply.financial_scenario import TaxAssumptions
+
+    snapshot = FinancialSnapshot(
+        inputs=complete_inputs(),
+        updated_at=NOW,
+        tax_assumptions=TaxAssumptions(price_basis="NO_VAT", import_vat_per_unit=0),
+    )
     result = calculate_financial(snapshot, now=NOW)
     assert result.revision == snapshot.revision
     assert result.economics.estimated_net_profit == 14.54
