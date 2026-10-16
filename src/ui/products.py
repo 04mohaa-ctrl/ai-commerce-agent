@@ -248,7 +248,7 @@ def render_details(result: ResearchResult, repo: ProductRepository, prefix: str)
             "Supplier Intelligence",
         ],
         default="Supplier Intelligence"
-        if st.session_state.get("supplier_focus_product") == product.id
+        if st.session_state.get("supplier_focus_product") == product.id or prefix == "v5_candidate"
         else "Research"
         if st.session_state.get("research_focus_product") == product.id
         else "Analysis",

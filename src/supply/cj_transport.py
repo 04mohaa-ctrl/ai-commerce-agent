@@ -18,6 +18,7 @@ from typing import Any
 from uuid import uuid4
 from weakref import WeakValueDictionary
 
+import httpcore
 import httpx
 
 from src.supply.models import ActionTelemetry, LimitSource, LocalLimit
@@ -102,13 +103,37 @@ def _params(operation: CJOperation, params: Mapping[str, Any]) -> dict[str, Any]
         return None
     if operation == CJOperation.SEARCH:
         if (
-            set(params) != {"keyWord", "page", "size"}
+            not {"keyWord", "page", "size"} <= set(params)
+            or set(params)
+            - {
+                "keyWord",
+                "page",
+                "size",
+                "countryCode",
+                "categoryId",
+                "startSellPrice",
+                "endSellPrice",
+            }
             or not _text(params["keyWord"])
             or type(params["page"]) is not int
             or not 1 <= params["page"] <= 2
             or type(params["size"]) is not int
             or not 1 <= params["size"] <= 10
         ):
+            return None
+        from src.discovery.models import DiscoverySearch
+
+        try:
+            DiscoverySearch(
+                query=params["keyWord"],
+                page=params["page"],
+                size=params["size"],
+                country=params.get("countryCode"),
+                category_id=params.get("categoryId"),
+                min_price=params.get("startSellPrice"),
+                max_price=params.get("endSellPrice"),
+            )
+        except ValueError:
             return None
     elif operation in {CJOperation.DETAILS, CJOperation.VARIANTS, CJOperation.STOCK}:
         key = "vid" if operation == CJOperation.STOCK else "pid"
@@ -152,8 +177,14 @@ class CJResearchTransport:
         clock: Callable[[], datetime] | None = None,
         monotonic: Callable[[], float] = time.monotonic,
         sleeper: Callable[[float], None] = time.sleep,
+        retry_limit: int = 1,
     ):
-        self._credential = os.environ.get("CJ_API_KEY", "").strip()
+        from src.config import offline_mode
+
+        if type(retry_limit) is not int or not 0 <= retry_limit <= 1:
+            raise ValueError("CJ retry limit must be zero or one.")
+        self._retry_limit = retry_limit
+        self._credential = "" if offline_mode() else os.environ.get("CJ_API_KEY", "").strip()
         self._http_transport = http_transport
         self._clock = clock or (lambda: datetime.now(UTC))
         self._monotonic = monotonic
@@ -221,7 +252,7 @@ class CJResearchTransport:
             return self._outcome("UNAVAILABLE", "CJ supplier research is not configured.")
         with self._action_lock, self._state.lock:
             try:
-                retry = [1]
+                retry = [self._retry_limit]
                 token_result = self._ensure_token(retry)
                 if token_result is not None:
                     return token_result
@@ -340,6 +371,8 @@ class CJResearchTransport:
         return 1.0
 
     def _dispatch(self, operation: str, params: dict) -> CJTransportOutcome:
+        from src.research.providers.safe_http import _DeadlineTransport, _Rejected
+
         remaining = self._deadline - self._monotonic()
         if self._dispatches >= self._max_requests:
             return self._outcome(
@@ -386,7 +419,8 @@ class CJResearchTransport:
         try:
             # Fresh clients prevent response cookies from affecting subsequent calls.
             with httpx.Client(
-                transport=self._http_transport,
+                transport=self._http_transport
+                or _DeadlineTransport(self._deadline, self._monotonic),
                 trust_env=False,
                 follow_redirects=False,
                 timeout=min(20.0, remaining),
@@ -430,7 +464,18 @@ class CJResearchTransport:
                                 limit_source="LOCAL_TIME_BUDGET",
                             )
                     envelope = json.loads(content)
-        except (httpx.TimeoutException, httpx.TransportError):
+        except (_Rejected, httpcore.TimeoutException):
+            return self._outcome(
+                "BUDGET_EXHAUSTED",
+                "Local CJ action deadline reached.",
+                limit_source="LOCAL_TIME_BUDGET",
+            )
+        except (
+            httpx.TimeoutException,
+            httpx.TransportError,
+            httpcore.NetworkError,
+            httpcore.ProtocolError,
+        ):
             return self._outcome("FAILED", "CJ transport request failed.", retryable=True)
         except (ValueError, TypeError, RecursionError, httpx.DecodingError):
             return self._outcome("FAILED", "CJ response is malformed.")

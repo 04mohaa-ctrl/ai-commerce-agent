@@ -203,15 +203,54 @@ class SupplierIntelligenceService:
             )
             report.offers = prior.offers if prior else []
             return self._finish(report, run, started)
-        search = self._component(
-            product,
-            destination,
-            "search",
-            {"query": product.name},
-            lambda: self.provider.search(product.name, page=1, size=10),
-            force,
-            run,
-        )
+        origin = None
+        if product.supplier_identity:
+            from src.discovery.repository import DiscoveryRepository
+
+            origin = DiscoveryRepository(self.repo.repository).get_origin(product.id)
+        if origin and origin.evidence_kind == "SYNTHETIC":
+            run.stages.append(
+                {
+                    "component": "search",
+                    "provider": self.provider.name,
+                    "status": "UNSUPPORTED",
+                    "notice": "Synthetic candidate: live supplier requests are blocked.",
+                }
+            )
+            return self._finish(report, run, started)
+        if origin and origin.candidate.provider == self.provider.name:
+            search = ProviderOutcome(
+                status="SUCCESS", records=[origin.candidate.model_dump(mode="json")]
+            )
+            run.stages.append(
+                {
+                    "component": "search",
+                    "provider": self.provider.name,
+                    "status": "SUCCESS",
+                    "cached": True,
+                    "notice": "Saved exact supplier identity; no keyword search dispatched.",
+                }
+            )
+        elif product.supplier_identity:
+            run.stages.append(
+                {
+                    "component": "search",
+                    "provider": self.provider.name,
+                    "status": "UNSUPPORTED",
+                    "notice": "Saved supplier identity unavailable or provider mismatch.",
+                }
+            )
+            return self._finish(report, run, started)
+        else:
+            search = self._component(
+                product,
+                destination,
+                "search",
+                {"query": product.name},
+                lambda: self.provider.search(product.name, page=1, size=10),
+                force,
+                run,
+            )
         candidates = self._records(search, SupplierProductCandidate, run)
         if search.status not in {"SUCCESS", "SUCCESS_EMPTY"} or (search.records and not candidates):
             report.offers = prior.offers if prior else []

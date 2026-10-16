@@ -1,14 +1,18 @@
 """Optional native DataForSEO relative popularity; no search-volume inference."""
 
+import json
 import os
+import time
 from collections.abc import Callable
 from datetime import date, datetime, timedelta, timezone
 from typing import Literal, Protocol
 from uuid import uuid4
 
+import httpcore
 import httpx
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from src.research.providers.safe_http import _DeadlineTransport, _Rejected
 from src.schemas.product import Product
 
 ENDPOINT = "https://api.dataforseo.com/v3/keywords_data/dataforseo_trends/explore/live"
@@ -122,14 +126,18 @@ class DataForSEOTrendProvider:
         clock: Callable[[], datetime] = utc_now,
         location_code: int = 2840,
         location_name: str = "United States",
+        monotonic: Callable[[], float] = time.monotonic,
     ):
-        self._login = os.environ.get("DATAFORSEO_LOGIN", "").strip()
+        from src.config import offline_mode
+
+        self._login = "" if offline_mode() else os.environ.get("DATAFORSEO_LOGIN", "").strip()
         self._password = os.environ.get("DATAFORSEO_PASSWORD", "").strip()
         self.transport = transport
         self.clock = clock
         self.location_code = location_code
         self.location = f"{location_name} ({location_code})"
         self.request_count = 0
+        self.monotonic = monotonic
 
     @property
     def enabled(self) -> bool:
@@ -159,15 +167,28 @@ class DataForSEOTrendProvider:
             "date_from": start.isoformat(),
             "date_to": end.isoformat(),
         }
+        deadline = self.monotonic() + 20
         try:
             with httpx.Client(
-                transport=self.transport, timeout=20, follow_redirects=False, trust_env=False
+                transport=self.transport or _DeadlineTransport(deadline, self.monotonic),
+                timeout=20,
+                follow_redirects=False,
+                trust_env=False,
             ) as client:
                 self.request_count += 1
-                response = client.post(ENDPOINT, json=[request], auth=(self._login, self._password))
-                response.raise_for_status()
-                observations = self._parse(response.json(), request, now, start, end)
-        except httpx.TimeoutException:
+                with client.stream(
+                    "POST", ENDPOINT, json=[request], auth=(self._login, self._password)
+                ) as response:
+                    response.raise_for_status()
+                    body = bytearray()
+                    for chunk in response.iter_bytes():
+                        if self.monotonic() >= deadline:
+                            raise httpx.ReadTimeout("Demand absolute deadline exceeded")
+                        if len(body) + len(chunk) > 2 * 1024 * 1024:
+                            raise ValueError("Demand response exceeds body limit")
+                        body.extend(chunk)
+                    observations = self._parse(json.loads(body), request, now, start, end)
+        except (httpx.TimeoutException, httpcore.TimeoutException, _Rejected):
             return DemandResult(
                 **base,
                 status="failed",
@@ -191,7 +212,7 @@ class DataForSEOTrendProvider:
                 provider_status=error.code,
                 notice=f"Demand task rejected ({error.code}). Check task access/account limits.",
             )
-        except httpx.HTTPError:
+        except (httpx.HTTPError, httpcore.NetworkError, httpcore.ProtocolError):
             return DemandResult(
                 **base,
                 status="failed",

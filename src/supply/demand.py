@@ -95,7 +95,7 @@ class DemandIntelligenceService:
     @staticmethod
     def _current_key(product, destination, query):
         return "demand-current-v4:" + _hash(
-            [product.id, product_fingerprint(product), destination.country, query.casefold()]
+            [product.id, product_fingerprint(product), destination.country, query]
         )
 
     def _stored(self, product, destination, query):
@@ -136,18 +136,16 @@ class DemandIntelligenceService:
     def _compatible(result, provider, query, location):
         return (
             result.provider == provider
-            and result.query.casefold().split() == query.casefold().split()
+            and result.query == query
             and result.location == location
             and all(
-                o.provider == provider
-                and o.query.casefold().split() == query.casefold().split()
-                and o.location == location
+                o.provider == provider and o.query == query and o.location == location
                 for o in result.observations
             )
         )
 
     def _legacy_cached(self, product, provider, query, location, now):
-        if query.casefold().split() != product.name.casefold().split():
+        if query != product.name:
             return None
         market = MarketIntelligenceRepository(self.repo.repository)
         entry = market.get_cache(

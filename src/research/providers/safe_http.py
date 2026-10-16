@@ -190,8 +190,32 @@ class _DeadlineBackend(httpcore.NetworkBackend):
         self.deadline, self.monotonic = deadline, monotonic
 
     def connect_tcp(self, host, port, timeout=None, local_address=None, socket_options=None):
+        # System getaddrinfo is not covered by socket timeouts. Resolve on a bounded
+        # worker and connect only to a numeric address; HTTPcore retains the original
+        # host for TLS verification and SNI. A timed-out worker never opens a socket.
+        try:
+            ipaddress.ip_address(host)
+            address = host
+        except ValueError:
+            answers = queue.Queue(maxsize=1)
+
+            def resolve():
+                try:
+                    answers.put(socket.getaddrinfo(host, port, type=socket.SOCK_STREAM))
+                except OSError:
+                    answers.put(None)
+
+            threading.Thread(target=resolve, daemon=True).start()
+            try:
+                resolved = answers.get(timeout=_remaining(self.deadline, self.monotonic, timeout))
+            except queue.Empty:
+                raise _Rejected("DNS deadline exceeded.", "unavailable") from None
+            _remaining(self.deadline, self.monotonic, timeout)
+            if not resolved:
+                raise httpcore.ConnectError("DNS resolution failed.")
+            address = resolved[0][4][0]
         stream = self.backend.connect_tcp(
-            host,
+            address,
             port,
             _remaining(self.deadline, self.monotonic, timeout),
             local_address,

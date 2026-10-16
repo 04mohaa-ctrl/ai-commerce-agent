@@ -81,6 +81,14 @@ def render_research_view(product: Product, repo: ProductRepository, settings: Se
         "OpenAI web research may incur API charges. "
         "The Settings demo switch prevents external research. Navigation makes no requests."
     )
+    st.caption(
+        "Scope: this candidate, original product-name query. Up to two OpenAI model "
+        "requests (45-second SDK timeouts; no automatic retries), bounded public-page "
+        "support, optional original-name demand and CJ supplier research. "
+        "Additional reviewed queries run only through Research reviewed demand queries. "
+        "Each stage retains successful work if another stage fails. "
+        "Provider money charges and quota points are separate from local request limits."
+    )
     st.checkbox("Refresh all providers (ignore fresh caches)", key=f"force_refresh_{product.id}")
     st.checkbox(
         "Reuse fresh web research to avoid a new OpenAI request",

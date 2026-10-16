@@ -156,6 +156,38 @@ class CJDropShippingProvider:
             identity=lambda row: row["product_id"],
         )
 
+    def discover(self, search) -> ProviderOutcome:
+        from src.discovery.models import CatalogItem, DiscoverySearch, catalog_price
+
+        search = DiscoverySearch.model_validate(search.model_dump())
+        result = self._transport.request("search", search.parameters())
+        failure = self._failure(result)
+        if failure is not None:
+            return failure
+        groups = result.data.get("content") if isinstance(result.data, dict) else None
+        rows, rejected = [], 0
+        for group in groups if isinstance(groups, list) else [None]:
+            if not isinstance(group, dict) or not isinstance(group.get("productList"), list):
+                rejected += 1
+            else:
+                rows.extend(group["productList"])
+
+        def build(row):
+            price = catalog_price(row.get("sellPrice"))
+            return CatalogItem(
+                candidate=self._candidate(row, result.observed_at),
+                catalog_price=price,
+                currency="USD" if price is not None else None,
+            )
+
+        return self._parse(
+            rows,
+            result,
+            build,
+            rejected=rejected,
+            identity=lambda row: row["candidate"]["product_id"],
+        )
+
     def _candidate(self, row: dict, observed_at: datetime, *, detail: bool = False):
         return SupplierProductCandidate(
             provider=self.name,

@@ -26,7 +26,26 @@ def result(product):
 @pytest.fixture(autouse=True)
 def offline_market_boundaries(monkeypatch):
     """Existing UI fixtures gain V3 stages without making real page/API requests."""
+    import socket
+
+    import httpcore
     import httpx
+
+    def block_live_http(*args, **kwargs):
+        raise AssertionError(
+            "Live HTTP is forbidden in offline tests; inject a labeled fixture transport."
+        )
+
+    monkeypatch.setattr(httpx.HTTPTransport, "handle_request", block_live_http)
+    monkeypatch.setattr(httpcore.SyncBackend, "connect_tcp", block_live_http)
+    original_getaddrinfo = socket.getaddrinfo
+
+    def offline_dns(host, *args, **kwargs):
+        if host in {"localhost", "127.0.0.1", "::1", b"localhost", b"127.0.0.1", b"::1"}:
+            return original_getaddrinfo(host, *args, **kwargs)
+        raise OSError("External DNS is disabled in offline tests.")
+
+    monkeypatch.setattr(socket, "getaddrinfo", offline_dns)
 
     from src.research.providers.page_verification import PageVerificationProvider
     from src.research.providers.safe_http import SafePageFetcher

@@ -1,5 +1,48 @@
 # AI Commerce Agent
 
+## V5 local development build
+
+V5 adds **Discover → Candidates → Compare** using the existing CJ and V4 research,
+supplier-selection, economics and evidence services. This feature is developed on
+`codex/v5-discovery-comparison`, based on verified main
+`124c1f741aa584cf6c2444b52407992863a754f4` (723 passing baseline tests).
+
+Open [http://127.0.0.1:8510](http://127.0.0.1:8510) for the isolated **offline acceptance**
+app. Its three example products, stock, freight and demand data are explicitly synthetic.
+They are not live supplier observations. Existing operator databases and servers are preserved.
+
+The separate [bounded V5 catalog acceptance](docs/v5-live-acceptance-20261016.md) passed:
+one authentication and one keyword search, three genuine saved candidates, duplicate checks,
+restart persistence, comparison and export. Its offline viewer is http://127.0.0.1:8512.
+For these candidates, **variants, stock, freight, delivery, demand and complete economics
+remain unverified**. Listing prices were not adopted as costs. The full offline suite passed
+770 tests; historical V4 live evidence remains separate from this catalog-only acceptance.
+
+1. **Discover:** explicit CJ keyword search with country/category/price filters; at most two
+   pages of ten products. Save candidates without adopting catalog prices. Demo Mode blocks APIs.
+2. **Candidates:** specify requirements, select exact variants/warehouses/shipping methods,
+   research, then explicitly adopt costs. Review Swedish/English terms and save a query plan
+   before requesting additional demand series. Suggestions never replace the original product.
+3. **Compare:** choose 3–5 saved candidates, save a named group and decision reasons, inspect
+   incompatible assumptions and missing inputs, and export current V4 evidence plus V5 context.
+
+For a fresh offline workspace, with the locked dependencies installed:
+
+```powershell
+.\scripts\start-v5.ps1 -Port 8510 -DatabasePath data/v5-local.db
+```
+
+An isolated worktree can reuse an existing interpreter via `-PythonExecutable FULL_PATH`.
+`-LiveProviders` enables configured providers; it does not submit requests on startup.
+Configure keys privately in this worktree's ignored `.env` or process environment. No keys
+were copied during implementation. Direct local startup can also set `COMMERCE_OFFLINE=1`.
+
+The first V5 write activates schema 5 only after verifying a pre-V5 backup. V5 reads old
+data; V4 rollback uses that backup at a new path. See [readiness and recovery](docs/v5-readiness.md)
+and [validation](docs/verification-v5.md). Local use is supported for one trusted operator;
+shared hosted private beta and public launch remain blocked by ownership/auth/quota and
+operational requirements. No login screen has been added to imply multi-user safety.
+
 ## V4 real demand and supplier intelligence
 
 V4 adds **Supplier Intelligence** in Product Details to the existing research flow.
@@ -80,8 +123,9 @@ See [V3 architecture and usage](docs/v3-market-intelligence.md) and
 without both process-environment credentials; unavailable measured data never
 blocks the app. Page support confirms publisher attribution, not objective truth.
 
-**Released baseline: V4**, `main` / `v4.0.0` at `b34e5fc7`.
-Focused uncommitted fixes are on `codex/v4-supplier-requirements-fix`.
+**Historical V4 release:** `v4.0.0` at `b34e5fc7`.
+Verified main now includes the later V4 fixes at `124c1f741aa584cf6c2444b52407992863a754f4`.
+Current V5 work is isolated on `codex/v5-discovery-comparison`.
 Earlier stable releases remain tagged `v1.0.0`, `v2.0.0` and `v3.0.0`.
 All original demo, manual-product and saved-product flows remain supported.
 

@@ -46,22 +46,27 @@ class MarketIntelligenceRepository:
     def enable(self) -> None:
         with self.repository._connection() as conn:
             version = conn.execute("PRAGMA user_version").fetchone()[0]
-        if version in {3, 4}:
+        if version in {3, 4, 5}:
             return
         if version > 3:
             raise DataStoreError("This database needs a newer app version.")
-        self.backup_dir.mkdir(parents=True, exist_ok=True)
-        identity = hashlib.sha256(str(self.path.resolve()).encode()).hexdigest()[:12]
-        backup = self.backup_dir / f"{identity}-before-v3-{utc_now():%Y%m%dT%H%M%S%f}.db"
-        try:
-            with sqlite3.connect(self.path) as source, sqlite3.connect(backup) as dest:
-                source.backup(dest)
-        except sqlite3.Error:
-            raise DataStoreError(
-                "Cannot create pre-V3 database backup; migration stopped."
-            ) from None
         with self.repository._connection() as conn:
             conn.execute("BEGIN IMMEDIATE")
+            version = conn.execute("PRAGMA user_version").fetchone()[0]
+            if version in {3, 4, 5}:
+                return
+            if version > 3:
+                raise DataStoreError("This database needs a newer app version.")
+            self.backup_dir.mkdir(parents=True, exist_ok=True)
+            identity = hashlib.sha256(str(self.path.resolve()).encode()).hexdigest()[:12]
+            backup = self.backup_dir / f"{identity}-before-v3-{utc_now():%Y%m%dT%H%M%S%f}.db"
+            try:
+                with sqlite3.connect(self.path) as source, sqlite3.connect(backup) as dest:
+                    source.backup(dest)
+            except sqlite3.Error:
+                raise DataStoreError(
+                    "Cannot create pre-V3 database backup; migration stopped."
+                ) from None
             for table in TABLES:
                 conn.execute(
                     f"CREATE TABLE IF NOT EXISTS {table} "

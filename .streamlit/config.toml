@@ -12,3 +12,7 @@ headless = true
 
 [browser]
 gatherUsageStats = false
+
+[client]
+showErrorDetails = "none"
+toolbarMode = "minimal"

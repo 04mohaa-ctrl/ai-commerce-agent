@@ -23,13 +23,14 @@ class ProductRepository:
         try:
             self.path.parent.mkdir(parents=True, exist_ok=True)
             with self._connection() as conn:
+                conn.execute("BEGIN IMMEDIATE")
                 version = conn.execute("PRAGMA user_version").fetchone()[0]
                 tables = (
                     {
                         row[0]
                         for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")
                     }
-                    if version == 4
+                    if version in {4, 5}
                     else set()
                 )
                 required_v4 = {
@@ -47,15 +48,20 @@ class ProductRepository:
                     )
                 }
                 valid_v4 = (
-                    version == 4
+                    version in {4, 5}
                     and required_v4 <= tables
                     and conn.execute("SELECT 1 FROM supply_v4_meta WHERE version=4").fetchone()
                 )
-                if version > 3 and not valid_v4:
+                valid_v5 = (
+                    version == 5
+                    and valid_v4
+                    and {"workspace_v5", "workspace_meta_v5"} <= tables
+                    and conn.execute("SELECT 1 FROM workspace_meta_v5 WHERE version=5").fetchone()
+                )
+                if version > 3 and not (valid_v4 and version == 4 or valid_v5):
                     raise DataStoreError(
                         "This database needs a newer app version. No migration performed."
                     )
-                conn.execute("BEGIN IMMEDIATE")
                 conn.execute("""CREATE TABLE IF NOT EXISTS saved_products (
                     product_id TEXT PRIMARY KEY, payload TEXT NOT NULL,
                     schema_version INTEGER NOT NULL DEFAULT 1,
@@ -93,6 +99,10 @@ class ProductRepository:
 
     def save(self, result: ResearchResult) -> bool:
         """Create or update one snapshot. Return True only for a new saved entry."""
+        if result.product.supplier_identity:
+            from src.discovery.repository import DiscoveryRepository
+
+            DiscoveryRepository(self).enable()
         payload = result.model_dump_json()
         with self._connection() as conn:
             cursor = conn.execute(
@@ -131,6 +141,10 @@ class ProductRepository:
             )
 
     def add_candidate(self, product: Product) -> None:
+        if product.supplier_identity:
+            from src.discovery.repository import DiscoveryRepository
+
+            DiscoveryRepository(self).enable()
         with self._connection() as conn:
             conn.execute(
                 "INSERT INTO candidates (product_id, payload) VALUES (?, ?) "

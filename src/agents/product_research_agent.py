@@ -35,7 +35,9 @@ class ProductResearchAgent:
     ):
         self.api_key = api_key.strip()
         self.model = model
-        self.force_demo = force_demo
+        from src.config import offline_mode
+
+        self.force_demo = force_demo or offline_mode()
         self.client = client
 
     def analyze(self, product: Product) -> ResearchResult:

@@ -38,6 +38,10 @@ COUNTRIES = {
 
 
 def optional_provider_configured():
+    from src.config import offline_mode
+
+    if offline_mode():
+        return False
     return bool(
         os.getenv("CJ_API_KEY", "").strip()
         or (
@@ -361,6 +365,13 @@ def render_supplier_intelligence(product, repo):
     if demo:
         st.info("Demo Mode: external supplier and demand requests are disabled.")
     actions = st.columns(3)
+    st.caption(
+        "Explicit per-candidate actions: supplier refresh ≤12 HTTP attempts /90 seconds; "
+        "shipping ≤4 attempts /90 seconds; original-name demand ≤1 request /20 seconds. "
+        "CJ quota points are provider limits, separate from local request caps and money. "
+        "Charges depend on your provider account; no dollar price is established here. "
+        "Supplier/freight and cost adoption remain separate."
+    )
     if actions[0].button("Refresh supplier data", key=f"v4_supplier_{product.id}", disabled=demo):
         with st.spinner("Refreshing bounded supplier observations…"):
             service.research(product, destination, force=True)
@@ -381,8 +392,9 @@ def render_supplier_intelligence(product, repo):
             f"Supplier run {report.researched_at.isoformat()} "
             "· Observations retain original collection times."
         )
-        for stage in report.stages:
-            _stage_view(stage)
+        with st.expander("Supplier request details"):
+            for stage in report.stages:
+                _stage_view(stage)
         if report.destination != destination:
             st.warning(
                 "Supplier observations were collected for different target settings. "

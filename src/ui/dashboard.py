@@ -9,7 +9,7 @@ import streamlit as st
 from pydantic import ValidationError
 
 from src.agents.product_research_agent import ProductResearchAgent
-from src.config import PROJECT_ROOT, load_settings
+from src.config import PROJECT_ROOT, load_settings, offline_mode
 from src.database.database import DataStoreError, ProductRepository
 from src.research.scoring import hydrate_results
 from src.services.product_service import ResearchService
@@ -34,8 +34,10 @@ def main() -> None:
     )
     settings = load_settings()
     # This setting outlives the Settings-only toggle's widget lifecycle.
-    if "use_demo" not in st.session_state or not (
-        settings.api_key or optional_provider_configured()
+    if (
+        offline_mode()
+        or "use_demo" not in st.session_state
+        or not (settings.api_key or optional_provider_configured())
     ):
         st.session_state["use_demo"] = True
     with st.sidebar:
@@ -43,12 +45,23 @@ def main() -> None:
         st.caption("PRODUCT RESEARCH WORKSPACE")
         page = st.radio(
             "Navigation",
-            ["Dashboard", "Research", "Saved Products", "Settings"],
+            [
+                "Dashboard",
+                "Discover",
+                "Candidates",
+                "Compare",
+                "Research",
+                "Saved Products",
+                "Settings",
+            ],
             key="nav",
             label_visibility="collapsed",
         )
         st.divider()
-        st.caption("ONE ANALYST · V4")
+        st.caption("ONE OPERATOR · V5")
+        st.caption("Local workspace · shared-user access is not supported")
+        if offline_mode():
+            st.info("OFFLINE ACCEPTANCE · providers disabled")
         st.write(
             "Demo mode"
             if st.session_state["use_demo"]
@@ -72,22 +85,40 @@ def main() -> None:
             st.session_state["last_query"] = "Demo catalogue"
         saved = repo.list_saved()
         results = hydrate_results(st.session_state["results"], repo)
-        columns = st.columns(4)
-        columns[0].metric("Products analyzed", str(len(results)))
-        columns[1].metric("Saved products", str(len(saved)))
-        columns[2].metric(
-            "Average AI score", f"{mean(r.score.total for r in results):.1f}" if results else "—"
-        )
-        columns[3].metric(
-            "Highest score", f"{max(r.score.total for r in results):.1f}" if results else "—"
-        )
-        st.caption(
-            "Analysis metrics reflect the latest research in this session. "
-            "Saved products persist locally."
-        )
+        if page in {"Discover", "Candidates", "Compare"}:
+            st.caption(
+                f"V5 workflow · {len(saved)} saved candidates · local single-operator workspace"
+            )
+        else:
+            columns = st.columns(4)
+            columns[0].metric("Products analyzed", str(len(results)))
+            columns[1].metric("Saved products", str(len(saved)))
+            columns[2].metric(
+                "Average AI score",
+                f"{mean(r.score.total for r in results):.1f}" if results else "—",
+            )
+            columns[3].metric(
+                "Highest score", f"{max(r.score.total for r in results):.1f}" if results else "—"
+            )
+            st.caption(
+                "Analysis metrics reflect the latest research in this session. "
+                "Saved products persist locally."
+            )
         if message := st.session_state.pop("flash", None):
             st.success(message)
-        if page == "Settings":
+        if page == "Discover":
+            from src.ui.discovery import render_discovery
+
+            render_discovery(repo)
+        elif page == "Candidates":
+            from src.ui.discovery import render_candidates
+
+            render_candidates(repo)
+        elif page == "Compare":
+            from src.ui.comparison_workspace import render_comparison_workspace
+
+            render_comparison_workspace(repo)
+        elif page == "Settings":
             render_settings(settings)
         elif page == "Research":
             render_research(repo, settings)

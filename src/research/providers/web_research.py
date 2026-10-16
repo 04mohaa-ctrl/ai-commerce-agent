@@ -66,6 +66,10 @@ class WebResearchProvider:
     def research(
         self, product: Product, progress: ProgressCallback | None = None
     ) -> ResearchReport:
+        from src.config import offline_mode
+
+        if offline_mode():
+            raise ResearchProviderError("Offline acceptance mode disables web research.")
         try:
             if self.client is not None:
                 return self._research(self.client, product, progress)

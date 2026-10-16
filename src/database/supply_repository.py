@@ -57,12 +57,16 @@ class SupplyRepository:
         if self._exists():
             return
         MarketIntelligenceRepository(self.repository).enable()
-        try:
-            self._backup()
-        except (OSError, sqlite3.Error):
-            raise DataStoreError("Cannot create pre-V4 backup; activation stopped.") from None
         with self.repository._connection() as conn:
             conn.execute("BEGIN IMMEDIATE")
+            if conn.execute(
+                "SELECT 1 FROM sqlite_master WHERE type='table' AND name='supply_v4_meta'"
+            ).fetchone():
+                return
+            try:
+                self._backup()
+            except (OSError, sqlite3.Error):
+                raise DataStoreError("Cannot create pre-V4 backup; activation stopped.") from None
             conn.execute("CREATE TABLE IF NOT EXISTS supply_v4_meta (version INTEGER PRIMARY KEY)")
             conn.execute("INSERT OR IGNORE INTO supply_v4_meta VALUES(4)")
             for table in ("current", "settings", "selection", "financial", "shortlist", "cache"):

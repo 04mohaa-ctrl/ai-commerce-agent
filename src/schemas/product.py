@@ -5,7 +5,14 @@ import unicodedata
 from datetime import datetime, timezone
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    field_validator,
+    model_serializer,
+    model_validator,
+)
 
 Score = Annotated[float, Field(ge=0, le=10)]
 Money = Annotated[float, Field(ge=0, le=1_000_000)]
@@ -32,6 +39,11 @@ class ScoreHints(DomainModel):
     marketing: Score = 5
 
 
+class SupplierIdentity(DomainModel):
+    provider: str = Field(min_length=1, max_length=40, pattern=r"^[a-zA-Z0-9_-]+$")
+    product_id: str = Field(min_length=1, max_length=300)
+
+
 class Product(DomainModel):
     name: str = Field(min_length=1, max_length=120)
     category: str = Field(min_length=1, max_length=80)
@@ -42,16 +54,28 @@ class Product(DomainModel):
     source: Literal["demo", "manual", "external"] = "manual"
     hints: ScoreHints = Field(default_factory=ScoreHints)
     evidence: list[Evidence] = Field(default_factory=list)
+    supplier_identity: SupplierIdentity | None = None
 
     @field_validator("name", "category")
     @classmethod
     def normalize_text(cls, value: str) -> str:
         return " ".join(unicodedata.normalize("NFKC", value).split())
 
+    @model_serializer(mode="wrap")
+    def legacy_payload(self, handler):
+        data = handler(self)
+        if self.supplier_identity is None:
+            data.pop("supplier_identity", None)
+        return data
+
     @property
     def id(self) -> str:
         """Canonical identity remains stable when estimates change."""
         identity = f"{self.name.casefold()}\0{self.category.casefold()}"
+        if self.supplier_identity:
+            identity = (
+                f"supplier\0{self.supplier_identity.provider}\0{self.supplier_identity.product_id}"
+            )
         return hashlib.sha256(identity.encode("utf-8")).hexdigest()[:24]
 
 
